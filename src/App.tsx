@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Bot, LayoutDashboard, FileJson, History, Settings } from 'lucide-react';
 
-type Section = 'dashboard' | 'messages' | 'logs' | 'config';
+type Section = 'dashboard' | 'messages' | 'logs' | 'crm' | 'config';
 
 interface Lead {
   id: string;
@@ -400,6 +400,7 @@ export default function App() {
     { id: 'dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
     { id: 'messages', icon: <FileJson size={18} />, label: 'Mensajes (.json)' },
     { id: 'logs', icon: <History size={18} />, label: 'Logs de Envío' },
+    { id: 'crm', icon: <span>👥</span>, label: 'CRM Anita' },
     { id: 'config', icon: <Settings size={18} />, label: 'Configuración' },
   ];
 
@@ -451,6 +452,9 @@ export default function App() {
         )}
         {section === 'messages' && <MessagesView />}
         {section === 'logs' && <LogsView />}
+        {section === 'crm' && (
+          <iframe src="/anita" style={{ width: '100%', height: 'calc(100vh - 100px)', border: 'none' }} />
+        )}
         {section === 'config' && <ConfigView botStatus={botStatus} onSaved={fetchDashboardData} />}
       </main>
     </div>

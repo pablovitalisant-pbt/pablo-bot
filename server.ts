@@ -145,6 +145,11 @@ async function startServer() {
     });
   });
 
+  // Anita CRM
+  app.get('/anita', (req, res) => {
+    res.sendFile(path.resolve(process.cwd(), 'index.html'));
+  });
+
   // QR endpoint
   app.get('/qr', (req, res) => {
     const qr = whatsapp.currentQR;
