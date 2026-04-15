@@ -453,7 +453,12 @@ export default function App() {
         {section === 'messages' && <MessagesView />}
         {section === 'logs' && <LogsView />}
         {section === 'crm' && (
-          <iframe src="/anita" style={{ width: '100%', height: 'calc(100vh - 100px)', border: 'none' }} />
+          <div style={{ width: '100%', height: 'calc(100vh - 60px)', overflow: 'auto' }}>
+            <iframe
+              src="/anita"
+              style={{ width: '100%', height: '100%', border: 'none', minWidth: '1200px' }}
+            />
+          </div>
         )}
         {section === 'config' && <ConfigView botStatus={botStatus} onSaved={fetchDashboardData} />}
       </main>
