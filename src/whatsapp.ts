@@ -1,6 +1,6 @@
-import makeWASocket, { 
-  useMultiFileAuthState, 
-  DisconnectReason, 
+import makeWASocket, {
+  useMultiFileAuthState,
+  DisconnectReason,
   fetchLatestBaileysVersion,
   makeCacheableSignalKeyStore
 } from '@whiskeysockets/baileys';
@@ -8,11 +8,13 @@ import { Boom } from '@hapi/boom';
 import pino from 'pino';
 import path from 'path';
 import fs from 'fs-extra';
+import qrcode from 'qrcode';
 
 const logger = pino({ level: 'info' });
 
 let sock: any = null;
 let isConnected = false;
+export let currentQR: string | null = null;
 
 export async function connectToWhatsApp() {
   const authPath = path.resolve(process.cwd(), 'auth');
@@ -23,7 +25,7 @@ export async function connectToWhatsApp() {
 
   sock = makeWASocket({
     version,
-    printQRInTerminal: true,
+    printQRInTerminal: false,
     auth: {
       creds: state.creds,
       keys: makeCacheableSignalKeyStore(state.keys, logger),
@@ -34,8 +36,14 @@ export async function connectToWhatsApp() {
 
   sock.ev.on('creds.update', saveCreds);
 
-  sock.ev.on('connection.update', (update: any) => {
+  sock.ev.on('connection.update', async (update: any) => {
     const { connection, lastDisconnect } = update;
+
+    if (update.qr) {
+      currentQR = await qrcode.toDataURL(update.qr);
+      console.log('QR disponible en http://localhost:3000/qr');
+    }
+
     if (connection === 'close') {
       const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
       console.log('Conexión cerrada debido a ', lastDisconnect?.error, ', reconectando: ', shouldReconnect);
@@ -46,6 +54,7 @@ export async function connectToWhatsApp() {
     } else if (connection === 'open') {
       console.log('WhatsApp conectado ✓');
       isConnected = true;
+      currentQR = null;
     }
   });
 

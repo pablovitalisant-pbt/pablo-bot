@@ -3,7 +3,7 @@ import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import dotenv from 'dotenv';
 import fs from 'fs-extra';
-import { connectToWhatsApp } from './src/whatsapp.js';
+import * as whatsapp from './src/whatsapp.js';
 import { startScheduler } from './src/scheduler.js';
 
 dotenv.config();
@@ -74,6 +74,36 @@ async function startServer() {
     }
   });
 
+  // QR endpoint
+  app.get('/qr', (req, res) => {
+    const qr = whatsapp.currentQR;
+    res.setHeader('Content-Type', 'text/html');
+    if (qr) {
+      res.send(`<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>WhatsApp QR</title></head>
+<body style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;font-family:sans-serif;background:#f0f0f0;">
+  <h2>Escanea este QR con WhatsApp</h2>
+  <img src="${qr}" style="width:300px;height:300px;border:8px solid white;border-radius:8px;">
+  <button onclick="location.reload()" style="margin-top:20px;padding:10px 24px;font-size:16px;cursor:pointer;">Recargar</button>
+</body>
+</html>`);
+    } else {
+      res.send(`<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>WhatsApp QR</title><meta http-equiv="refresh" content="5"></head>
+<body style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;font-family:sans-serif;background:#f0f0f0;">
+  <h2 id="msg">Esperando QR... recarga en 5 segundos</h2>
+  <script>
+    fetch('/api/status').then(() => {
+      document.getElementById('msg').textContent = 'WhatsApp ya está conectado ✓';
+    });
+  </script>
+</body>
+</html>`);
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
@@ -94,7 +124,7 @@ async function startServer() {
     
     try {
       // Iniciar WhatsApp
-      await connectToWhatsApp();
+      await whatsapp.connectToWhatsApp();
       
       // Iniciar Scheduler
       startScheduler();
