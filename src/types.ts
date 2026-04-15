@@ -5,18 +5,35 @@ export interface Message {
 }
 
 export interface Lead {
-  id: string;
-  nombre: string | null;
+  id: number;
+  nombre: string;
+  pais: string;
   url: string;
+  comentarios: number;
+  producto: string;
+  caos: string;
+  notas: string;
   estado: string;
-  fases: string; // JSON string
-}
-
-export interface Fases {
+  fecha: string;
+  f1: any;
+  f2: any;
   f3: {
     dm1_enviado: boolean;
-    fechaEnvio?: string;
+    dm1_respondio: boolean;
+    fechaEnvio: string | null;
   };
+  f4: {
+    dms: Array<{
+      e: boolean;
+      r: boolean;
+      fechaEnvio: string | null;
+    }>;
+  };
+  f5: {
+    descartado: boolean;
+  };
+  historial: any[];
+  updatedAt: string;
 }
 
 export interface DailyCount {

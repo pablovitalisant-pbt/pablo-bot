@@ -2,13 +2,24 @@ import cron from 'node-cron';
 import { DateTime } from 'luxon';
 import fs from 'fs-extra';
 import path from 'path';
-import { getLeads, updateLead } from './googleSheets.js';
 import { sendMessage, extractJidFromUrl, getIsConnected } from './whatsapp.js';
 import { getRandomMessage } from './messages.js';
-import { DailyCount, LastSent } from './types.js';
+import { Lead, DailyCount, LastSent } from './types.js';
 
 const DAILY_COUNT_PATH = path.resolve(process.cwd(), 'data/daily_count.json');
 const LAST_SENT_PATH = path.resolve(process.cwd(), 'data/last_sent.json');
+const LEADS_PATH = path.resolve(process.cwd(), 'data/leads.json');
+
+async function getLeads(): Promise<Lead[]> {
+  if (await fs.pathExists(LEADS_PATH)) {
+    return await fs.readJson(LEADS_PATH);
+  }
+  return [];
+}
+
+async function saveLeads(leads: Lead[]) {
+  await fs.writeJson(LEADS_PATH, leads);
+}
 
 async function getDailyCount(): Promise<DailyCount> {
   const today = DateTime.now().setZone('America/Santiago').toISODate()!;
@@ -80,41 +91,36 @@ export function startScheduler() {
       console.log('Buscando prospectos...');
       const leads = await getLeads();
       
-      // Filtrar leads: estado == "frio", url wa.me, y f3.dm1_enviado == false (o f3 vacío)
-      const targetLead = leads.find(l => {
-        if (l.estado !== 'frio') return false;
-        if (!l.url.includes('wa.me')) return false;
-        try {
-          const f3 = JSON.parse(l.fases);
-          return Object.keys(f3).length === 0 || f3.dm1_enviado === false;
-        } catch (e) {
-          return true;
-        }
+      // Filtrar leads: estado == "frio" Y url incluye "wa.me" Y f3.dm1_enviado == false
+      const targetLeadIndex = leads.findIndex(l => {
+        return l.estado === 'frio' && 
+               l.url.includes('wa.me') && 
+               (!l.f3 || l.f3.dm1_enviado === false);
       });
 
-      if (!targetLead) {
+      if (targetLeadIndex === -1) {
         console.log('No hay prospectos pendientes.');
         return;
       }
 
+      const targetLead = leads[targetLeadIndex];
       console.log(`Enviando mensaje a: ${targetLead.nombre || 'Sin nombre'} (${targetLead.url})`);
       
       const jid = extractJidFromUrl(targetLead.url);
-      const { text, id: msgId } = await getRandomMessage(targetLead);
+      const { text, id: msgId } = await getRandomMessage(targetLead as any);
       
       await sendMessage(jid, text);
       console.log(`Mensaje enviado (ID: ${msgId}) ✓`);
 
-      // Actualizar Sheet
-      let f3: { dm1_enviado: boolean; dm1_respondio?: boolean; fechaEnvio?: string } = { dm1_enviado: false };
-      try {
-        f3 = JSON.parse(targetLead.fases);
-      } catch (e) {}
-      f3.dm1_enviado = true;
-      f3.fechaEnvio = DateTime.now().toISO()!;
-
-      await updateLead((targetLead as any).rowIndex, 'dm', f3);
-      console.log('Google Sheet actualizado ✓');
+      // Actualizar Lead localmente
+      targetLead.f3.dm1_enviado = true;
+      targetLead.f3.fechaEnvio = DateTime.now().toISO()!;
+      targetLead.estado = 'dm';
+      targetLead.updatedAt = DateTime.now().toISO()!;
+      
+      leads[targetLeadIndex] = targetLead;
+      await saveLeads(leads);
+      console.log('Leads local actualizado ✓');
 
       // Actualizar contadores
       await updateDailyCount(daily.count + 1);
