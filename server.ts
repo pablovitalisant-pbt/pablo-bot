@@ -147,7 +147,7 @@ async function startServer() {
 
   // Anita CRM
   app.get('/anita', (req, res) => {
-    res.sendFile(path.resolve(process.cwd(), 'index.html'));
+    res.sendFile(path.resolve(process.cwd(), 'anita.html'));
   });
 
   // QR endpoint

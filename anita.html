@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Anita — CRM de Prospección</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Lora:wght@500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Nueva Paleta de Colores */
+            --bg: #F7F8FA;
+            --surface: #FFFFFF;
+            --surface2: #F0F2F5;
+            --border: #E4E7EC;
+            --border-md: #C9D0DB;
+            --text: #101828;
+            --text2: #475467;
+            --text3: #98A2B3;
+            --accent: #16A34A;
+            --accent-l: #DCFCE7;
+            --amber: #B45309;
+            --amber-l: #FEF3C7;
+            --blue: #1D4ED8;
+            --blue-l: #DBEAFE;
+            --red: #DC2626;
+            --red-l: #FEE2E2;
+            
+            --sans: 'DM Sans', sans-serif;
+            --serif: 'Lora', serif;
+            --mono: 'DM Mono', monospace;
+            
+            --r-lg: 16px;
+            --r-md: 12px;
+            --shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: var(--sans); 
+            background: var(--bg); 
+            color: var(--text); 
+            min-height: 100vh; 
+            font-size: 16px; 
+            line-height: 1.5;
+            padding-bottom: 80px;
+        }
+
+        .shell { display: flex; min-height: 100vh; }
+        
+        .sidebar { 
+            width: 220px; 
+            flex-shrink: 0; 
+            background: var(--surface); 
+            border-right: 1px solid var(--border); 
+            position: fixed; 
+            top: 0; left: 0; bottom: 0; 
+            display: flex; 
+            flex-direction: column; 
+            z-index: 20; 
+        }
+        .logo { padding: 24px 20px; border-bottom: 1px solid var(--border); }
+        .logo h1 { font-family: var(--serif); font-size: 20px; font-weight: 500; color: var(--accent); }
+        
+        .nav { padding: 12px 0; flex: 1; }
+        .nav-lbl { font-family: var(--mono); font-size: 11px; color: var(--text3); padding: 12px 20px 6px; letter-spacing: .07em; text-transform: uppercase; }
+        .nav-btn { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            width: 100%; 
+            padding: 14px 20px; 
+            background: none; 
+            border: none; 
+            cursor: pointer; 
+            font-family: var(--sans); 
+            font-size: 14px; 
+            color: var(--text2); 
+            text-align: left; 
+            transition: all .15s; 
+        }
+        .nav-btn:hover { background: var(--surface2); }
+        .nav-btn.active { background: var(--accent-l); color: var(--accent); font-weight: 700; border-right: 4px solid var(--accent); }
+        
+        .main { margin-left: 220px; padding: 32px 40px; flex: 1; min-width: 0; }
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        .mobile-nav { 
+            display: none; 
+            position: fixed; 
+            bottom: 0; left: 0; right: 0; 
+            height: 70px; 
+            background: var(--surface); 
+            border-top: 1px solid var(--border); 
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 100;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .m-nav-btn { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 4px; 
+            background: none; 
+            border: none; 
+            color: var(--text3); 
+            font-size: 12px; 
+            font-family: var(--sans);
+            width: 33%;
+        }
+        .m-nav-btn.active { color: var(--accent); font-weight: 700; }
+        .m-nav-btn .ic { font-size: 24px; }
+
+        .ph { margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+        .ph h2 { font-family: var(--serif); font-size: 24px; font-weight: 500; }
+        .ph p { color: var(--text2); font-size: 15px; }
+
+        .p-card { 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            border-radius: var(--r-lg); 
+            padding: 20px; 
+            margin-bottom: 16px; 
+            cursor: pointer; 
+            box-shadow: var(--shadow);
+            transition: transform .1s;
+        }
+        .p-card:active { transform: scale(0.98); }
+        .p-card.pending-sync { border: 2px dashed var(--amber); }
+        .p-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .p-card-name { font-size: 18px; font-weight: 700; color: var(--text); }
+        .p-card-meta { font-size: 13px; color: var(--text3); font-family: var(--mono); margin-bottom: 12px; }
+        
+        .phase-bars { display: flex; gap: 4px; height: 4px; margin-top: 12px; }
+        .p-bar { flex: 1; background: var(--surface2); border-radius: 2px; }
+        .p-bar.done { background: var(--accent); }
+
+        .badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-family: var(--mono); font-weight: 700; text-transform: uppercase; }
+        .b-frio { background: var(--blue-l); color: var(--blue); }
+        .b-tibio { background: var(--amber-l); color: var(--amber); }
+        .b-dm { background: var(--accent-l); color: var(--accent); }
+        .b-cliente { background: #064E3B; color: #fff; }
+        .b-descartado { background: #E5E7EB; color: #4B5563; }
+        .b-alert { background: var(--red-l); color: var(--red); margin-left: 6px; }
+
+        /* Botón Basura */
+        .btn-trash {
+            background: none;
+            border: none;
+            color: var(--text3);
+            font-size: 18px;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            margin-left: 4px;
+        }
+        .btn-trash:hover {
+            color: var(--red);
+        }
+
+        .kanban { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; min-height: 60vh; }
+        .k-col { 
+            flex: 0 0 280px; 
+            background: #F0F2F5; 
+            border-radius: var(--r-lg); 
+            padding: 12px; 
+            border-top: 4px solid var(--border);
+        }
+        .k-col.frio { border-top-color: var(--blue); }
+        .k-col.tibio { border-top-color: var(--amber); }
+        .k-col.dm { border-top-color: var(--accent); }
+        .k-col.cliente { border-top-color: #064E3B; }
+        .k-col.descartado { border-top-color: var(--text3); }
+        
+        .k-hd { font-family: var(--sans); font-weight: 700; font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; color: var(--text2); }
+        .k-card { background: var(--surface); border-radius: 12px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer; }
+        .k-card-name { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+        .k-card-meta { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+
+        .detail-header { margin-bottom: 20px; }
+        .back-btn { 
+            display: inline-flex; 
+            align-items: center; 
+            height: 48px; 
+            padding: 0 16px; 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            border-radius: 12px; 
+            font-weight: 500; 
+            margin-bottom: 16px;
+            color: var(--text2);
+        }
+        
+        .fase-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px; margin-bottom: 20px; }
+        .fase-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+        
+        .dm-tag { display: inline-flex; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 6px; margin-bottom: 10px; font-family: var(--mono); }
+        .tag-wait { background: var(--surface2); color: var(--text3); }
+        .tag-soon { background: var(--blue-l); color: var(--blue); }
+        .tag-due { background: var(--amber-l); color: var(--amber); animation: pulse 2s infinite; }
+        .tag-sent { background: var(--accent-l); color: var(--accent); }
+        .dm-block-due { border: 2px solid var(--amber); background: #FFFBEB; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        .form-row { margin-bottom: 20px; }
+        .form-row label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 15px; }
+        input[type="text"], input[type="number"], select, textarea { 
+            width: 100%; 
+            height: 52px; 
+            padding: 0 16px; 
+            border: 1px solid var(--border); 
+            border-radius: 12px; 
+            font-family: var(--sans); 
+            font-size: 16px; 
+            outline: none; 
+            background: var(--surface);
+        }
+        textarea { height: 120px; padding: 16px; }
+        
+        .btn { 
+            height: 48px; 
+            padding: 0 24px; 
+            border-radius: 12px; 
+            font-weight: 700; 
+            font-size: 15px; 
+            cursor: pointer; 
+            border: none; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 8px; 
+            transition: all .2s;
+        }
+        .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(22, 163, 74, 0.2); }
+        .btn-outline { background: #fff; border: 1px solid var(--border); color: var(--text2); }
+
+        .check-item { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+        .check-item input[type="checkbox"] { width: 22px; height: 22px; margin-top: 2px; accent-color: var(--accent); flex-shrink: 0; }
+        .check-item label { font-size: 15px; line-height: 1.4; }
+
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
+        .overlay.active { display: flex; }
+        .modal { background: #fff; padding: 24px; border-radius: 20px; width: 100%; max-width: 400px; }
+        .modal h3 { font-family: var(--serif); font-size: 20px; margin-bottom: 12px; }
+        .modal-body { font-size: 15px; color: var(--text2); margin-bottom: 24px; }
+        
+        #toast { 
+            position: fixed; 
+            top: 20px; left: 20px; right: 20px; 
+            background: var(--text); 
+            color: #fff; 
+            padding: 16px; 
+            border-radius: 12px; 
+            font-size: 14px; 
+            font-weight: 500;
+            transform: translateY(-100px); 
+            transition: transform 0.4s; 
+            z-index: 1000; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        #toast.active { transform: translateY(0); }
+
+        /* --- Sync status bar --- */
+        .sync-bar { display: flex; align-items: center; gap: 8px; font-size: 11px; font-family: var(--mono); padding: 8px 14px; border-radius: 10px; margin-bottom: 20px; transition: all .3s; }
+        .sync-bar.ok { background: var(--accent-l); color: var(--accent); }
+        .sync-bar.offline { background: var(--amber-l); color: var(--amber); }
+        .sync-bar.syncing { background: var(--blue-l); color: var(--blue); }
+        .sync-bar.error { background: var(--red-l); color: var(--red); }
+        .sync-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .sync-bar.ok .sync-dot { background: var(--accent); }
+        .sync-bar.offline .sync-dot { background: var(--amber); }
+        .sync-bar.syncing .sync-dot { background: var(--blue); animation: pulse_sync .8s infinite; }
+        .sync-bar.error .sync-dot { background: var(--red); }
+        @keyframes pulse_sync { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+
+        @media (max-width: 767px) {
+            .sidebar { display: none; }
+            .mobile-nav { display: flex; }
+            .main { margin-left: 0; padding: 20px; }
+            .ph h2 { font-size: 22px; }
+            .kanban { padding-bottom: 20px; }
+            .k-col { flex: 0 0 260px; }
+            .detail-grid { display: flex; flex-direction: column; }
+            .sidebar-column { order: -1; }
+            .collapsible-card { margin-bottom: 12px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+            .collapsible-trigger { background: var(--surface2); padding: 12px; font-weight: 700; font-size: 14px; display: flex; justify-content: space-between; }
+            .collapsible-content { display: none; padding: 12px; background: #fff; }
+        }
+
+        @media (min-width: 768px) {
+            .detail-grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+            .collapsible-content { display: block !important; }
+            .collapsible-trigger span:last-child { display: none; }
+        }
+
+        /* --- Modal Editar Lead --- */
+        .edit-field { margin-bottom: 14px; }
+        .edit-field label { display:block; font-weight:700; font-size:13px; margin-bottom:6px; color:var(--text2); }
+        .edit-field input, .edit-field select { width:100%; height:48px; padding:0 14px; border:1px solid var(--border); border-radius:10px; font-family:var(--sans); font-size:15px; outline:none; }
+
+        /* --- Modal Importar WhatsApp --- */
+        .import-list { max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px; margin: 12px 0; }
+        .import-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .import-item:last-child { border-bottom: none; }
+        .import-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; }
+        .import-item .i-name { font-weight: 600; flex: 1; }
+        .import-item .i-phone { font-family: var(--mono); font-size: 12px; color: var(--text3); }
+        .import-item.is-dup { opacity: 0.4; }
+        .import-filter { width: 100%; height: 44px; padding: 0 14px; border: 1px solid var(--border); border-radius: 10px; font-family: var(--sans); font-size: 15px; margin-bottom: 8px; outline: none; }
+        .import-actions { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+        .import-count { font-size: 12px; font-family: var(--mono); color: var(--text3); }
+    </style>
+</head>
+<body>
+
+<div class="shell">
+    <aside class="sidebar">
+        <div class="logo">
+            <h1>Anita</h1>
+        </div>
+        <nav class="nav">
+            <div class="nav-lbl">Menú</div>
+            <button class="nav-btn active" onclick="showPanel('prospectos')">
+                <span class="ic">👥</span> <span>Leads</span>
+            </button>
+            <button class="nav-btn" onclick="showPanel('nuevo')">
+                <span class="ic">➕</span> <span>Nuevo</span>
+            </button>
+            <button class="nav-btn" onclick="showPanel('pipeline')">
+                <span class="ic">📊</span> <span>Pipeline</span>
+            </button>
+        </nav>
+        <div style="padding: 14px 20px; border-top: 1px solid var(--border);">
+            <p id="sync-footer-text" style="font-size: 10px; font-family: var(--mono); color: var(--text3); margin-top: 4px;"></p>
+        </div>
+    </aside>
+
+    <nav class="mobile-nav">
+        <button class="m-nav-btn active" onclick="showPanel('prospectos')">
+            <span class="ic">👥</span> <span>Leads</span>
+        </button>
+        <button class="m-nav-btn" onclick="showPanel('nuevo')">
+            <span class="ic">➕</span> <span>Nuevo</span>
+        </button>
+        <button class="m-nav-btn" onclick="showPanel('pipeline')">
+            <span class="ic">📊</span> <span>Pipeline</span>
+        </button>
+    </nav>
+
+    <main class="main">
+        <section id="panel-prospectos" class="panel active">
+            <div class="ph">
+                <h2>Mis Leads</h2>
+                <p>Seguimiento de vendedoras activas</p>
+            </div>
+            <div style="margin-bottom: 16px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <input type="text" id="search-leads" placeholder="🔍 Buscar leads..." oninput="renderPipeline()" style="flex:1; min-width:160px; height:44px; padding:0 16px; border:1px solid var(--border); border-radius:12px; font-family:var(--sans); font-size:15px; outline:none;">
+                <select id="sort-leads" onchange="renderPipeline()" style="height:44px; padding:0 12px; border:1px solid var(--border); border-radius:12px; font-family:var(--sans); font-size:14px; outline:none; background:var(--surface); color:var(--text2); cursor:pointer;">
+                    <option value="ingreso-desc">📅 Más recientes</option>
+                    <option value="ingreso-asc">📅 Más antiguos</option>
+                    <option value="interaccion-desc" selected>⚡ Última interacción</option>
+                    <option value="nombre-asc">🔤 Nombre A→Z</option>
+                    <option value="nombre-desc">🔤 Nombre Z→A</option>
+                </select>
+                <button class="btn btn-outline" onclick="abrirModalImport()">📲 Importar WhatsApp</button>
+            </div>
+            <div id="sync-bar-prosp"></div>
+            <div id="pipeline-container"></div>
+        </section>
+
+        <section id="panel-nuevo" class="panel">
+            <div class="ph">
+                <h2>Nuevo Lead</h2>
+                <p>Fase 1: Recopilación</p>
+            </div>
+            <form id="form-nuevo" onsubmit="crearProspecto(event)">
+                <div class="form-row">
+                    <label>Nombre del perfil / página *</label>
+                    <input type="text" id="n-nombre" required placeholder="Nombre de la vendedora">
+                </div>
+                <div class="form-row">
+                    <label>País</label>
+                    <select id="n-pais">
+                        <option value="México">México</option>
+                        <option value="Colombia">Colombia</option>
+                        <option value="Perú">Perú</option>
+                        <option value="Ecuador">Ecuador</option>
+                        <option value="Chile">Chile</option>
+                        <option value="Argentina">Argentina</option>
+                        <option value="Estados Unidos">Estados Unidos</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label>URL del perfil</label>
+                    <input type="text" id="n-url" placeholder="https://facebook.com/...">
+                </div>
+                <div class="form-row">
+                    <label>¿Qué vende?</label>
+                    <input type="text" id="n-producto" placeholder="Ej: Ropa, Joyería...">
+                </div>
+                <div class="form-row">
+                    <label>Notas iniciales</label>
+                    <textarea id="n-notas" placeholder="Observaciones del live..."></textarea>
+                </div>
+                <div class="btn-group" style="display: flex; gap: 12px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Guardar Lead</button>
+                    <button type="button" class="btn btn-outline" onclick="showPanel('prospectos')">Cancelar</button>
+                </div>
+            </form>
+        </section>
+
+        <section id="panel-pipeline" class="panel">
+            <div class="ph">
+                <h2>Pipeline Visual</h2>
+                <p>Estado del flujo de ventas</p>
+            </div>
+            <div class="kanban" id="kanban-container"></div>
+        </section>
+
+        <section id="panel-detalle" class="panel">
+            <div id="detalle-container"></div>
+        </section>
+    </main>
+</div>
+
+<!-- Modal Editar Lead -->
+<div class="overlay" id="modal-edit-lead">
+    <div class="modal" style="max-width:420px;">
+        <h3>✏️ Editar Lead</h3>
+        <div class="edit-field">
+            <label>Nombre</label>
+            <input type="text" id="edit-nombre" placeholder="Nombre del lead">
+        </div>
+        <div class="edit-field">
+            <label>¿Qué vende?</label>
+            <input type="text" id="edit-producto" placeholder="Ej: Ropa, Joyería...">
+        </div>
+        <div class="edit-field">
+            <label>País</label>
+            <select id="edit-pais">
+                <option value="México">México</option>
+                <option value="Colombia">Colombia</option>
+                <option value="Perú">Perú</option>
+                <option value="Ecuador">Ecuador</option>
+                <option value="Chile">Chile</option>
+                <option value="Argentina">Argentina</option>
+                <option value="Estados Unidos">Estados Unidos</option>
+                <option value="Otro">Otro</option>
+            </select>
+        </div>
+        <div class="edit-field">
+            <label>URL / Perfil</label>
+            <input type="text" id="edit-url" placeholder="https://wa.me/...">
+        </div>
+        <div style="display:flex; gap:12px; margin-top:16px;">
+            <button class="btn btn-outline" style="flex:1;" onclick="closeModal('modal-edit-lead')">Cancelar</button>
+            <button class="btn btn-primary" style="flex:1;" onclick="guardarEdicion()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Importar WhatsApp -->
+<div class="overlay" id="modal-import-wa">
+    <div class="modal" style="max-width: 480px;">
+        <h3>📲 Importar desde WhatsApp</h3>
+        <p style="font-size:13px; color:var(--text2); margin-bottom:12px;">Selecciona los contactos a importar como leads.</p>
+        <input class="import-filter" type="text" id="import-filter-input" placeholder="Filtrar por nombre o grupo..." oninput="renderImportList()">
+        <div class="import-actions">
+            <input type="checkbox" id="import-select-all" onchange="toggleSelectAll(this.checked)" style="width:18px;height:18px;accent-color:var(--accent);">
+            <label for="import-select-all" style="font-size:13px;">Seleccionar todos</label>
+            <span class="import-count" id="import-count-label"></span>
+        </div>
+        <div class="import-list" id="import-list-container"></div>
+        <div style="display:flex; gap:12px; margin-top:16px;">
+            <button class="btn btn-outline" style="flex:1;" onclick="closeModal('modal-import-wa')">Cancelar</button>
+            <button class="btn btn-primary" style="flex:1;" onclick="confirmarImport()">Importar seleccionados</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Alerta DMs -->
+<div class="overlay" id="modal-alert-dm">
+    <div class="modal">
+        <h3 id="modal-alert-title">🔔 DMs Pendientes</h3>
+        <div class="modal-body" id="modal-alert-body"></div>
+        <button class="btn btn-primary" style="width: 100%;" onclick="closeModal('modal-alert-dm')">Entendido, voy a enviarlo</button>
+    </div>
+</div>
+
+<!-- Modal Confirmar Eliminación -->
+<div class="overlay" id="modal-confirm-delete">
+    <div class="modal">
+        <h3>¿Eliminar este lead?</h3>
+        <div class="modal-body" id="modal-delete-body"></div>
+        <div style="display: flex; gap: 12px; margin-top: 24px;">
+            <button class="btn btn-outline" style="flex: 1;" onclick="closeModal('modal-confirm-delete')">Cancelar</button>
+            <button class="btn btn-primary" style="flex: 1; background: var(--red);" id="btn-confirm-delete">Sí, eliminar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notificación -->
+<div id="toast">
+    <span id="toast-msg"></span>
+    <button onclick="this.parentElement.classList.remove('active')" style="background:none; border:none; color:#fff; font-weight:700; margin-left:10px;">X</button>
+</div>
+
+<script>
+    // --- Estado Global ---
+    let prospectos = JSON.parse(localStorage.getItem('anita_v2_prospectos')) || [];
+    let pendingSync = JSON.parse(localStorage.getItem('anita_pending') || '[]');
+    let currentProspectId = null;
+    let isOnline = navigator.onLine;
+    let isSyncing = false;
+
+    const DM_INTERVALS = [0, 3, 7, 12, 21];
+
+    // --- Funciones de API ---
+    async function apiGet(action) {
+        const res = await fetch('/api/leads');
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error);
+        return json.result;
+    }
+
+    async function apiPost(action, payload) {
+        let method = 'POST';
+        let url = '/api/leads';
+        if (action === 'updateProspecto') { method = 'PUT'; url = '/api/leads/' + payload.id; }
+        if (action === 'deleteProspecto') { method = 'DELETE'; url = '/api/leads/' + payload.id; }
+        const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: method !== 'DELETE' ? JSON.stringify(payload) : undefined
+        });
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error);
+        return json.result;
+    }
+
+    function setSyncStatus(state, msg) {
+        const bar = document.getElementById('sync-bar-prosp');
+        const foot = document.getElementById('sync-footer-text');
+        if (!bar) return;
+        bar.className = 'sync-bar ' + state;
+        bar.innerHTML = `<div class="sync-dot"></div><span>${msg}</span>`;
+        if (foot) foot.textContent = msg;
+    }
+
+    async function loadFromSheets() {
+        setSyncStatus('syncing', 'Sincronizando...');
+        isSyncing = true;
+        try {
+            const remoteProsp = await apiGet();
+            const remoteIds = new Set(remoteProsp.map(p => String(p.id)));
+            const localOnly = prospectos.filter(p => !remoteIds.has(String(p.id)));
+            
+            prospectos = [...remoteProsp.map(p => {
+                const local = prospectos.find(x => String(x.id) === String(p.id));
+                const remote = {
+                    ...p,
+                    fases: p.fases || { f2_respondio: false, f3: { dm1_enviado: false, dm1_respondio: false, fechaEnvio: null }, f4: { dms: Array(4).fill().map(() => ({ e: false, r: false, fechaEnvio: null })) }, f5: { descartado: false } },
+                    historial: Array.isArray(p.historial) ? p.historial : []
+                };
+                if (!local) return remote;
+                // Conservar campos editados localmente que pueden no haberse sincronizado aún
+                return {
+                    ...remote,
+                    nombre:            local.nombre            || remote.nombre,
+                    producto:          local.producto          !== undefined ? local.producto : remote.producto,
+                    pais:              local.pais              || remote.pais,
+                    url:               local.url               !== undefined ? local.url : remote.url,
+                    notas:             local.notas             !== undefined ? local.notas : remote.notas,
+                    ultimaInteraccion: local.ultimaInteraccion || remote.ultimaInteraccion,
+                    fases:             local.fases             || remote.fases,
+                };
+            }), ...localOnly];
+            
+            saveData();
+            setSyncStatus('ok', 'Sincronizado con Google Sheets');
+            await flushPending();
+        } catch(err) {
+            setSyncStatus('error', 'Sin conexión — usando datos locales');
+            console.warn('Sheets error:', err);
+        } finally {
+            isSyncing = false;
+            renderPipeline();
+            if (typeof renderKanban === 'function') renderKanban();
+        }
+    }
+
+    async function flushPending() {
+        if (!pendingSync.length) return;
+        const toFlush = [...pendingSync];
+        for (const item of toFlush) {
+            try {
+                if (item.type === 'saveProspecto')   await apiPost('saveProspecto',   item.payload);
+                if (item.type === 'updateProspecto') await apiPost('updateProspecto', item.payload);
+                if (item.type === 'deleteProspecto') await apiPost('deleteProspecto', item.payload);
+                pendingSync = pendingSync.filter(x => x !== item);
+                saveData();
+            } catch(err) {
+                console.warn('Flush failed for', item.type, err);
+                break;
+            }
+        }
+        if (!pendingSync.length) setSyncStatus('ok', 'Todo sincronizado');
+        else setSyncStatus('offline', `${pendingSync.length} cambio(s) pendientes`);
+    }
+
+    async function write(action, payload) {
+        try {
+            setSyncStatus('syncing', 'Guardando...');
+            await apiPost(action, payload);
+            setSyncStatus('ok', 'Guardado en Google Sheets');
+        } catch(err) {
+            pendingSync.push({ type: action, payload });
+            saveData();
+            setSyncStatus('offline', `${pendingSync.length} cambio(s) pendientes`);
+        }
+    }
+
+    function serializeProspecto(p) {
+        return {
+            id: p.id,
+            nombre: p.nombre,
+            pais: p.pais,
+            url: p.url || '',
+            producto: p.producto || '',
+            notas: p.notas || '',
+            estado: p.estado,
+            fecha: p.fecha || new Date(p.id).toISOString(),
+            ultimaInteraccion: p.ultimaInteraccion || p.fecha || new Date(p.id).toISOString(),
+            fases: p.fases,
+            historial: p.historial || []
+        };
+    }
+
+    function tocarLead(p) {
+        p.ultimaInteraccion = new Date().toISOString();
+    }
+
+    function saveData(action, payload) {
+        localStorage.setItem('anita_v2_prospectos', JSON.stringify(prospectos));
+        localStorage.setItem('anita_pending', JSON.stringify(pendingSync));
+        if (action && payload) {
+            write(action, payload);
+        }
+    }
+
+    // --- Navegación ---
+    function showPanel(id) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(`panel-${id}`).classList.add('active');
+        document.querySelectorAll('.nav-btn, .m-nav-btn').forEach(b => b.classList.remove('active'));
+        const btns = document.querySelectorAll(`button[onclick="showPanel('${id}')"]`);
+        btns.forEach(b => b.classList.add('active'));
+        if (id === 'prospectos') renderPipeline();
+        if (id === 'pipeline') renderKanban();
+        window.scrollTo(0,0);
+    }
+
+    // --- Lógica de Negocio ---
+    function calcularEstado(p) {
+        if (p.fases.f5.descartado) return 'descartado';
+        if (p.estado === 'cliente') return 'cliente';
+        if (p.fases.f3.dm1_enviado) return 'dm';
+        if (p.fases.f2_respondio) return 'tibio';
+        return 'frio';
+    }
+
+    function checkOverdueDMs(p) {
+        if (!p.fases.f3.dm1_enviado || !p.fases.f3.fechaEnvio) return [];
+        const overdue = [];
+        const baseDate = new Date(p.fases.f3.fechaEnvio);
+        p.fases.f4.dms.forEach((dm, i) => {
+            if (!dm.e) {
+                const dueDate = new Date(baseDate);
+                dueDate.setDate(dueDate.getDate() + DM_INTERVALS[i+1]);
+                if (new Date() >= dueDate) {
+                    const diff = Math.floor((new Date() - dueDate) / (1000 * 60 * 60 * 24));
+                    overdue.push({ num: i + 2, delay: diff });
+                }
+            }
+        });
+        return overdue;
+    }
+
+    // --- Renderizado ---
+    function renderPipeline() {
+        const container = document.getElementById('pipeline-container');
+        const searchEl = document.getElementById('search-leads');
+        const sortEl   = document.getElementById('sort-leads');
+        const kw   = searchEl ? searchEl.value.toLowerCase().trim() : '';
+        const sort = sortEl ? sortEl.value : 'interaccion-desc';
+
+        const norm = s => String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const kwNorm   = norm(kw);
+        const kwDigits = kw.replace(/\D/g, '');
+        let activos = prospectos.filter(p => {
+            if (p.estado === 'descartado') return false;
+            if (!kw) return true;
+            const urlDigits = (p.url||'').replace(/\D/g, '');
+            return norm(p.nombre).includes(kwNorm) ||
+                   norm(p.producto).includes(kwNorm) ||
+                   norm(p.notas).includes(kwNorm) ||
+                   norm(p.url).includes(kwNorm) ||
+                   norm(p.pais).includes(kwNorm) ||
+                   (kwDigits && urlDigits.includes(kwDigits));
+        });
+
+        const getUltimaTs = p => {
+            const candidates = [
+                p.ultimaInteraccion,
+                p.fases?.f3?.fechaEnvio,
+                p.fases?.f4?.dms?.map(d => d.fechaEnvio).filter(Boolean).pop(),
+                p.fecha,
+            ].filter(Boolean).map(d => new Date(d).getTime()).filter(n => !isNaN(n));
+            return candidates.length ? Math.max(...candidates) : p.id;
+        };
+
+        activos.sort((a, b) => {
+            if (sort === 'ingreso-desc') return b.id - a.id;
+            if (sort === 'ingreso-asc')  return a.id - b.id;
+            if (sort === 'interaccion-desc') return getUltimaTs(b) - getUltimaTs(a);
+            const collator = new Intl.Collator('es', { sensitivity: 'base', numeric: true });
+            if (sort === 'nombre-asc')  return collator.compare(norm(a.nombre), norm(b.nombre));
+            if (sort === 'nombre-desc') return collator.compare(norm(b.nombre), norm(a.nombre));
+            return 0;
+        });
+        container.innerHTML = activos.map(p => {
+            const overdue = checkOverdueDMs(p);
+            const isPending = pendingSync.some(x => String(x.payload?.id) === String(p.id));
+            const bars = Array(5).fill(0).map((_, i) => {
+                let done = false;
+                if (i === 0) done = true;
+                if (i === 1 && p.fases.f2_respondio) done = true;
+                if (i === 2 && p.fases.f3.dm1_enviado) done = true;
+                if (i === 3 && p.fases.f4.dms.some(d => d.e)) done = true;
+                if (i === 4 && p.estado === 'cliente') done = true;
+                return `<div class="p-bar ${done ? 'done' : ''}"></div>`;
+            }).join('');
+            return `
+                <div class="p-card ${isPending?'pending-sync':''}" onclick="verDetalle(${p.id})">
+                    <div class="p-card-header">
+                        <div class="p-card-name">${p.nombre}</div>
+                        <div style="display:flex; align-items:center;">
+                            <span class="badge ${getBadgeClass(p.estado)}">${p.estado}</span>
+                            ${overdue.length > 0 ? `<span class="badge b-alert">🔔 DM pendiente</span>` : ''}
+                            ${(() => { const r = getRedIcon(p.url); return r ? `<button class="btn-trash" style="font-size:20px;" onclick="abrirPerfil(event, '${p.url}')" title="${r.label}">${r.icon}</button>` : ''; })()}
+                            <button class="btn-trash" onclick="abrirModalEliminar(event, ${p.id})">🗑</button>
+                        </div>
+                    </div>
+                    <div class="p-card-meta">📍 ${p.pais} • 📦 ${p.producto || 'Sin producto'} • ⚡ ${(() => { const d = new Date(p.ultimaInteraccion || p.fecha || p.id); return d.toLocaleDateString('es-CL') + ' ' + d.toLocaleTimeString('es-CL', {hour:'2-digit',minute:'2-digit'}); })()}</div>
+                    <div class="phase-bars">${bars}</div>
+                </div>
+            `;
+        }).join('') || '<p style="text-align:center; padding:40px; color:var(--text3);">No hay leads activos.</p>';
+    }
+
+    function renderKanban() {
+        const container = document.getElementById('kanban-container');
+        const states = [
+            { id: 'frio', label: '🥶 Frío', cls: 'frio' },
+            { id: 'tibio', label: '🌡️ Tibio', cls: 'tibio' },
+            { id: 'dm', label: '💬 En DMs', cls: 'dm' },
+            { id: 'cliente', label: '✅ Clientes', cls: 'cliente' },
+            { id: 'descartado', label: '🗑️ Descartados', cls: 'descartado' }
+        ];
+        container.innerHTML = states.map(s => {
+            const leads = prospectos.filter(p => p.estado === s.id);
+            return `
+                <div class="k-col ${s.cls}">
+                    <div class="k-hd"><span>${s.label}</span> <span>(${leads.length})</span></div>
+                    ${leads.map(p => {
+                        const overdue = checkOverdueDMs(p);
+                        return `
+                            <div class="k-card" onclick="verDetalle(${p.id})">
+                                <div class="k-card-name">${p.nombre} ${overdue.length > 0 ? '<span style="color:var(--red)">🔔</span>' : ''}</div>
+                                <div class="k-card-meta">${p.pais} • ${new Date(p.id).toLocaleDateString()}</div>
+                            </div>
+                        `;
+                    }).join('') || '<div style="font-size:12px; color:var(--text3); text-align:center; padding:10px;">Sin leads aquí</div>'}
+                </div>
+            `;
+        }).join('');
+    }
+
+    function verDetalle(id) {
+        currentProspectId = id;
+        const p = prospectos.find(x => x.id === id);
+        const container = document.getElementById('detalle-container');
+        const overdue = checkOverdueDMs(p);
+        if (overdue.length > 0) {
+            document.getElementById('modal-alert-title').textContent = `🔔 DMs pendientes con ${p.nombre}`;
+            document.getElementById('modal-alert-body').innerHTML = overdue.map(o => `• DM ${o.num} — lleva ${o.delay} días de retraso`).join('<br>');
+            document.getElementById('modal-alert-dm').classList.add('active');
+        }
+        container.innerHTML = `
+            <div class="detail-header">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <button class="back-btn" style="margin-bottom:0;" onclick="showPanel('prospectos')">← Volver a leads</button>
+                <button class="btn btn-outline" onclick="abrirModalEditar(${p.id})" style="gap:6px;">✏️ Editar</button>
+            </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2 style="font-family:var(--serif); font-size:24px;">${p.nombre}</h2>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        ${(() => { const r = getRedIcon(p.url); return r ? `<button class="btn btn-outline" onclick="window.open('${p.url}', '_blank')" style="gap:6px;">${r.icon} ${r.label}</button>` : ''; })()}
+                        <span class="badge ${getBadgeClass(p.estado)}">${p.estado}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="detail-grid">
+                <div class="main-column">
+                    <div class="fase-section">
+                        <div class="fase-title">Fase 2: Micro-interacciones</div>
+                        <div class="check-item" style="color:var(--accent); font-weight:700;">
+                            <input type="checkbox" ${p.fases.f2_respondio ? 'checked' : ''} onchange="updateF2Respondio(${p.id}, this.checked)">
+                            <label>✅ Me respondió o reaccionó en el live</label>
+                        </div>
+                    </div>
+                    <div class="fase-section">
+                        <div class="fase-title">Fase 3: Primer DM</div>
+                        <div class="check-item">
+                            <input type="checkbox" ${p.fases.f3.dm1_enviado ? 'checked' : ''} onchange="updateF3(${p.id}, 'e', this.checked)">
+                            <label>Envié el primer DM</label>
+                        </div>
+                        ${p.fases.f3.fechaEnvio ? `<div class="dm-tag tag-sent">✓ Enviado el ${new Date(p.fases.f3.fechaEnvio).toLocaleDateString()}</div>` : ''}
+                        <div class="check-item">
+                            <input type="checkbox" ${p.fases.f3.dm1_respondio ? 'checked' : ''} onchange="updateF3(${p.id}, 'r', this.checked)">
+                            <label>✅ Me respondió el DM</label>
+                        </div>
+                    </div>
+                    <div class="fase-section">
+                        <div class="fase-title">Fase 4: Seguimiento</div>
+                        ${renderF4(p)}
+                    </div>
+                    <div class="fase-section">
+                        <div class="fase-title">Fase 5: Cierre</div>
+                        <div class="check-item" style="color:var(--accent); font-weight:700;">
+                            <input type="checkbox" ${p.estado === 'cliente' ? 'checked' : ''} onchange="updateF5(${p.id}, 'cliente', this.checked)">
+                            <label>Abrió cuenta en Anita ✅</label>
+                        </div>
+                        <div class="check-item">
+                            <input type="checkbox" ${p.fases.f5.descartado ? 'checked' : ''} onchange="updateF5(${p.id}, 'descarte', this.checked)">
+                            <label>Descartar prospecto</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="sidebar-column">
+                    <div class="fase-section">
+                        <div class="fase-title" style="font-size:15px;">Notas</div>
+                        <textarea onblur="saveNotas(${p.id}, this.value)">${p.notas || ''}</textarea>
+                    </div>
+                    <div class="collapsible-card">
+                        <div class="collapsible-trigger" onclick="toggleCollapsible(this)">
+                            <span>🛡 Objeciones</span> <span>▼</span>
+                        </div>
+                        <div class="collapsible-content">
+                            <p style="font-size:13px; margin-bottom:10px;"><strong>"Es muy caro":</strong> Anita se paga sola si recuperas 2 pedidos perdidos.</p>
+                            <p style="font-size:13px;"><strong>"No tengo tiempo":</strong> Si sabes hacer un live, ya sabes usar Anita.</p>
+                        </div>
+                    </div>
+                    <div class="collapsible-card">
+                        <div class="collapsible-trigger" onclick="toggleCollapsible(this)">
+                            <span>⚡ Script CLOSER</span> <span>▼</span>
+                        </div>
+                        <div class="collapsible-content">
+                            <p style="font-size:13px;">1. Clarifica | 2. Etiqueta | 3. Oferta | 4. Objeción | 5. Cierre</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        showPanel('detalle');
+    }
+
+    function renderF4(p) {
+        const dms = ["DM 2 — Día 3", "DM 3 — Día 7", "DM 4 — Día 12", "DM 5 — Día 21"];
+        return dms.map((title, i) => {
+            const dm = p.fases.f4.dms[i];
+            let tag = '';
+            let blockClass = '';
+            if (dm.e) {
+                tag = `<span class="dm-tag tag-sent">✓ Enviado el ${new Date(dm.fechaEnvio).toLocaleDateString()}</span>`;
+            } else if (!p.fases.f3.dm1_enviado) {
+                tag = `<span class="dm-tag tag-wait">⏳ Esperando envío del DM anterior</span>`;
+            } else {
+                const baseDate = new Date(p.fases.f3.fechaEnvio);
+                const dueDate = new Date(baseDate);
+                dueDate.setDate(dueDate.getDate() + DM_INTERVALS[i+1]);
+                const today = new Date();
+                if (today >= dueDate) {
+                    const diff = Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
+                    tag = `<span class="dm-tag tag-due">${diff === 0 ? '🔔 ¡Toca hoy!' : `⚠️ Vencido hace ${diff} días`}</span>`;
+                    blockClass = 'dm-block-due';
+                } else {
+                    const diff = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+                    tag = `<span class="dm-tag tag-soon">📅 Toca en ${diff} días</span>`;
+                }
+            }
+            return `
+                <div class="round-box ${blockClass}" style="padding:12px; border:1px solid var(--border); border-radius:12px; margin-bottom:12px;">
+                    <div style="font-weight:700; font-size:14px; margin-bottom:4px;">${title}</div>
+                    ${tag}
+                    <div class="check-item" style="margin-top:8px;">
+                        <input type="checkbox" ${dm.e ? 'checked' : ''} onchange="updateF4(${p.id}, ${i}, 'e', this.checked)">
+                        <label>Enviado</label>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function crearProspecto(e) {
+        e.preventDefault();
+        const nuevo = {
+            id: Date.now(),
+            nombre: document.getElementById('n-nombre').value,
+            pais: document.getElementById('n-pais').value,
+            url: document.getElementById('n-url').value,
+            producto: document.getElementById('n-producto').value,
+            notas: document.getElementById('n-notas').value,
+            estado: 'frio',
+            fases: {
+                f2_respondio: false,
+                f3: { dm1_enviado: false, dm1_respondio: false, fechaEnvio: null },
+                f4: { dms: Array(4).fill().map(() => ({ e: false, r: false, fechaEnvio: null })) },
+                f5: { descartado: false }
+            },
+            historial: []
+        };
+        prospectos.unshift(nuevo);
+        saveData('saveProspecto', serializeProspecto(nuevo));
+        e.target.reset();
+        showPanel('prospectos');
+    }
+
+    function updateF2Respondio(id, val) {
+        const p = prospectos.find(x => x.id === id);
+        p.fases.f2_respondio = val;
+        p.estado = calcularEstado(p);
+        tocarLead(p);
+        saveData('updateProspecto', serializeProspecto(p));
+        verDetalle(id);
+    }
+
+    function updateF3(id, type, val) {
+        const p = prospectos.find(x => x.id === id);
+        if (type === 'e') {
+            p.fases.f3.dm1_enviado = val;
+            p.fases.f3.fechaEnvio = val ? new Date().toISOString() : null;
+        } else {
+            p.fases.f3.dm1_respondio = val;
+        }
+        p.estado = calcularEstado(p);
+        tocarLead(p);
+        saveData('updateProspecto', serializeProspecto(p));
+        verDetalle(id);
+    }
+
+    function updateF4(id, idx, type, val) {
+        const p = prospectos.find(x => x.id === id);
+        if (type === 'e') {
+            p.fases.f4.dms[idx].e = val;
+            p.fases.f4.dms[idx].fechaEnvio = val ? new Date().toISOString() : null;
+        }
+        p.estado = calcularEstado(p);
+        tocarLead(p);
+        saveData('updateProspecto', serializeProspecto(p));
+        verDetalle(id);
+    }
+
+    function updateF5(id, type, val) {
+        const p = prospectos.find(x => x.id === id);
+        if (type === 'cliente') p.estado = val ? 'cliente' : calcularEstado(p);
+        if (type === 'descarte') p.fases.f5.descartado = val;
+        p.estado = calcularEstado(p);
+        tocarLead(p);
+        saveData('updateProspecto', serializeProspecto(p));
+        verDetalle(id);
+    }
+
+    function saveNotas(id, val) {
+        const p = prospectos.find(x => x.id === id);
+        if (p.notas !== val) {
+            p.notas = val;
+            tocarLead(p);
+            saveData('updateProspecto', serializeProspecto(p));
+        }
+    }
+
+    // --- Eliminación ---
+    function abrirModalEliminar(e, id) {
+        e.stopPropagation();
+        const p = prospectos.find(x => x.id === id);
+        if (!p) return;
+        
+        document.getElementById('modal-delete-body').textContent = `Esta acción no se puede deshacer. ${p.nombre} será eliminado permanentemente.`;
+        document.getElementById('modal-confirm-delete').classList.add('active');
+        
+        document.getElementById('btn-confirm-delete').onclick = () => {
+            prospectos = prospectos.filter(x => x.id !== id);
+            saveData('deleteProspecto', { id: id });
+            closeModal('modal-confirm-delete');
+            renderPipeline();
+            if (typeof renderKanban === 'function') renderKanban();
+            showToastMsg("Lead eliminado");
+        };
+    }
+
+    function getBadgeClass(estado) { return `b-${estado}`; }
+
+    function abrirModalEditar(id) {
+        const p = prospectos.find(x => x.id === id);
+        if (!p) return;
+        document.getElementById('edit-nombre').value  = p.nombre  || '';
+        document.getElementById('edit-producto').value = p.producto || '';
+        document.getElementById('edit-url').value     = p.url     || '';
+        const sel = document.getElementById('edit-pais');
+        sel.value = p.pais || 'Otro';
+        if (!sel.value) sel.value = 'Otro';
+        document.getElementById('modal-edit-lead').dataset.leadId = id;
+        document.getElementById('modal-edit-lead').classList.add('active');
+    }
+
+    function guardarEdicion() {
+        const id = Number(document.getElementById('modal-edit-lead').dataset.leadId);
+        const p = prospectos.find(x => x.id === id);
+        if (!p) return;
+        p.nombre   = document.getElementById('edit-nombre').value.trim()   || p.nombre;
+        p.producto = document.getElementById('edit-producto').value.trim();
+        p.pais     = document.getElementById('edit-pais').value;
+        p.url      = document.getElementById('edit-url').value.trim();
+        saveData('updateProspecto', serializeProspecto(p));
+        closeModal('modal-edit-lead');
+        renderPipeline();
+        verDetalle(id);
+        showToastMsg('✅ Lead actualizado');
+    }
+
+    function getRedIcon(url) {
+        if (!url) return null;
+        const u = url.toLowerCase();
+        if (u.includes('wa.me') || u.includes('whatsapp')) return { icon: '💬', label: 'WhatsApp' };
+        if (u.includes('facebook.com') || u.includes('fb.com')) return { icon: '📘', label: 'Facebook' };
+        if (u.includes('instagram.com')) return { icon: '📸', label: 'Instagram' };
+        if (u.includes('tiktok.com')) return { icon: '🎵', label: 'TikTok' };
+        return { icon: '🔗', label: 'Ver perfil' };
+    }
+
+    function abrirPerfil(e, url) {
+        e.stopPropagation();
+        if (!url) return;
+        window.open(url, '_blank');
+    }
+
+    function toggleCollapsible(el) {
+        if (window.innerWidth >= 768) return;
+        const content = el.nextElementSibling;
+        const isVisible = content.style.display === 'block';
+        content.style.display = isVisible ? 'none' : 'block';
+        el.querySelector('span:last-child').textContent = isVisible ? '▼' : '▲';
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function showToastMsg(msg) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toast-msg').textContent = msg;
+        toast.classList.add('active');
+        setTimeout(() => toast.classList.remove('active'), 3000);
+    }
+
+    // --- Importar WhatsApp CSV ---
+    let importContacts = [];
+
+    function abrirModalImport() {
+        importContacts = [];
+        document.getElementById('import-filter-input').value = '';
+        document.getElementById('import-list-container').innerHTML = '<p style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">Cargando archivo...</p>';
+        document.getElementById('import-count-label').textContent = '';
+        document.getElementById('import-select-all').checked = false;
+        document.getElementById('modal-import-wa').classList.add('active');
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.csv';
+        input.onchange = e => parsearCSV(e.target.files[0]);
+        input.click();
+    }
+
+    function parsearCSV(file) {
+        if (!file) {
+            document.getElementById('import-list-container').innerHTML = '<p style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">No se seleccionó archivo.</p>';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = e => {
+            const lines = e.target.result.split('\n').filter(l => l.trim());
+            const headers = lines[0].split(',').map(h => h.replace(/^\uFEFF/, '').trim().toLowerCase());
+            const isNuevoFormato = headers.includes('wa_url');
+            if (isNuevoFormato) {
+                const idxNombre = headers.indexOf('nombre');
+                const idxUrl    = headers.indexOf('wa_url');
+                const idxGrupos = headers.indexOf('grupos');
+                importContacts = lines.slice(1).map(line => {
+                    const cols = line.split(',');
+                    const clean = i => (cols[i] || '').trim().replace(/^"|"$/g, '');
+                    const url = clean(idxUrl);
+                    return { name: clean(idxNombre), phone: url.replace('https://wa.me/',''), url: url, labels: clean(idxGrupos), selected: false };
+                }).filter(c => c.url && c.url.includes('wa.me'));
+            } else {
+                const idxName  = headers.indexOf('saved name');
+                const idxPhone = headers.indexOf('phone number');
+                const idxLabel = headers.indexOf('labels');
+                importContacts = lines.slice(1).map(line => {
+                    const cols = line.split(',');
+                    const clean = i => (cols[i] || '').trim().replace(/^"|"$/g, '');
+                    const phone = clean(idxPhone);
+                    return { name: clean(idxName), phone: phone, url: phone ? `https://wa.me/${phone.replace(/\s+/g,'')}` : '', labels: clean(idxLabel), selected: false };
+                }).filter(c => c.name && c.phone);
+            }
+            renderImportList();
+        };
+        reader.readAsText(file, 'UTF-8');
+    }
+
+    function renderImportList() {
+        const kw = document.getElementById('import-filter-input').value.toLowerCase();
+        const filtered = importContacts.filter(c => !kw || c.name.toLowerCase().includes(kw) || c.labels.toLowerCase().includes(kw));
+        const existingUrls = new Set(prospectos.map(p => p.url));
+        let html = '';
+        filtered.forEach(c => {
+            const waUrl = c.url || `https://wa.me/${c.phone.replace(/\s+/g,'')}`;
+            const isDup = existingUrls.has(waUrl);
+            const globalIdx = importContacts.indexOf(c);
+            html += `<div class="import-item ${isDup?'is-dup':''}">
+                <input type="checkbox" ${c.selected&&!isDup?'checked':''} ${isDup?'disabled':''} data-idx="${globalIdx}" onchange="importContacts[${globalIdx}].selected=this.checked; updateImportCount()">
+                <div style="flex:1;">
+                    <div class="i-name">${c.name}${isDup?' <span style=\"font-size:11px;color:var(--text3);\">(ya existe)</span>':''}</div>
+                    <div class="i-phone">${c.phone}${c.labels?' · '+c.labels:''}</div>
+                </div>
+            </div>`;
+        });
+        document.getElementById('import-list-container').innerHTML = html || '<p style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">Sin resultados</p>';
+        updateImportCount();
+    }
+
+    function updateImportCount() {
+        const sel = importContacts.filter(c => c.selected).length;
+        document.getElementById('import-count-label').textContent = sel > 0 ? `${sel} seleccionado(s)` : '';
+    }
+
+    function toggleSelectAll(checked) {
+        const kw = document.getElementById('import-filter-input').value.toLowerCase();
+        const existingUrls = new Set(prospectos.map(p => p.url));
+        importContacts.forEach(c => {
+            const visible = !kw || c.name.toLowerCase().includes(kw) || c.labels.toLowerCase().includes(kw);
+            const waUrl = c.url || `https://wa.me/${c.phone.replace(/\s+/g,'')}`;
+            const isDup = existingUrls.has(waUrl);
+            if (visible && !isDup) c.selected = checked;
+        });
+        renderImportList();
+    }
+
+    function confirmarImport() {
+        const seleccionados = importContacts.filter(c => c.selected);
+        if (!seleccionados.length) { showToastMsg('Selecciona al menos un contacto'); return; }
+        seleccionados.forEach((c, i) => {
+            const waUrl = c.url || `https://wa.me/${c.phone.replace(/\s+/g,'')}`;
+            const nuevo = {
+                id: Date.now() + i,
+                nombre: c.name,
+                pais: 'Otro',
+                url: waUrl,
+                producto: '',
+                notas: c.labels ? `Grupos: ${c.labels}` : '',
+                estado: 'frio',
+                fases: {
+                    f2_respondio: false,
+                    f3: { dm1_enviado: false, dm1_respondio: false, fechaEnvio: null },
+                    f4: { dms: Array(4).fill().map(() => ({ e: false, r: false, fechaEnvio: null })) },
+                    f5: { descartado: false }
+                },
+                historial: []
+            };
+            prospectos.unshift(nuevo);
+            saveData('saveProspecto', serializeProspecto(nuevo));
+        });
+        closeModal('modal-import-wa');
+        renderPipeline();
+        showToastMsg(`✅ ${seleccionados.length} leads importados`);
+    }
+
+    window.addEventListener('online',  async () => { isOnline = true;  setSyncStatus('syncing','Reconectado, sincronizando...'); await flushPending(); });
+    window.addEventListener('offline', () => { isOnline = false; setSyncStatus('offline','Sin conexión'); });
+
+    window.onload = () => {
+        setSyncStatus('syncing', 'Conectando con Google Sheets...');
+        renderPipeline();
+        if (typeof renderKanban === 'function') renderKanban();
+        loadFromSheets();
+
+        let overdueCount = 0;
+        let affectedLeads = 0;
+        prospectos.forEach(p => {
+            const overdue = checkOverdueDMs(p);
+            if (overdue.length > 0) {
+                overdueCount += overdue.length;
+                affectedLeads++;
+            }
+        });
+        if (overdueCount > 0) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = `🔔 Tienes ${overdueCount} DMs vencidos en ${affectedLeads} leads — Toca para revisar`;
+            toast.classList.add('active');
+            toast.onclick = () => { showPanel('prospectos'); toast.classList.remove('active'); };
+        }
+    };
+</script>
+
+</body>
+</html>
