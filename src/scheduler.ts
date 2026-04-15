@@ -47,7 +47,7 @@ async function updateLastSent() {
   await fs.writeJson(LAST_SENT_PATH, { timestamp: DateTime.now().toISO() });
 }
 
-export let schedulerRunning = false;
+export let schedulerRunning = true;
 
 export function startBot() {
   schedulerRunning = true;
