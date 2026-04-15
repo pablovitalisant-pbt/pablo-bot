@@ -1,0 +1,6 @@
+{
+  "name": "Pablo Bot - WhatsApp Automation",
+  "description": "Bot automatizado para envío de mensajes por WhatsApp y gestión de leads en Google Sheets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

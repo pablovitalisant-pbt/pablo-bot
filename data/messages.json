@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1,
+    "con_nombre": "Hola {nombre}, ¿cómo está? Soy Pablo, de la Zofri en Iquique. Le escribo súper breve — ¿usted o alguien de su equipo está vendiendo por lives en Facebook o Instagram actualmente?",
+    "generico": "Hola case, ¿cómo está? Soy Pablo, de la Zofri en Iquique. Le escribo súper breve — ¿usted o alguien de su equipo está vendiendo por lives en Facebook o Instagram actualmente?"
+  },
+  {
+    "id": 2,
+    "con_nombre": "Hola {nombre}, ¿todo bien? Pablo por acá, de la Zofri en Iquique. Oiga, consulta rápida: ¿han probado hacer lives de ventas en Facebook o Instagram?",
+    "generico": "Hola case, ¿todo bien? Pablo por acá, de la Zofri en Iquique. Oiga, consulta rápida: ¿han probado hacer lives de ventas en Facebook o Instagram?"
+  },
+  {
+    "id": 3,
+    "con_nombre": "Hola {nombre}, ¿cómo le va? Le habla Pablo desde la Zofri en Iquique. Le hago una corta — ¿usted o su equipo están usando lives para vender en redes?",
+    "generico": "Hola case, ¿cómo le va? Le habla Pablo desde la Zofri en Iquique. Le hago una corta — ¿usted o su equipo están usando lives para vender en redes?"
+  },
+  {
+    "id": 4,
+    "con_nombre": "Hola {nombre}, ¿qué tal? Pablo de la Zofri por aquí. Una pregunta al grano: ¿están vendiendo por lives en Facebook o Instagram?",
+    "generico": "Hola case, ¿qué tal? Pablo de la Zofri por aquí. Una pregunta al grano: ¿están vendiendo por lives en Facebook o Instagram?"
+  },
+  {
+    "id": 5,
+    "con_nombre": "Hola {nombre}, ¿cómo está? Soy Pablo, trabajo en la Zofri en Iquique. Oiga, rapidito — ¿usted o alguien de su equipo hace transmisiones en vivo para vender?",
+    "generico": "Hola case, ¿cómo está? Soy Pablo, trabajo en la Zofri en Iquique. Oiga, rapidito — ¿usted o alguien de su equipo hace transmisiones en vivo para vender?"
+  },
+  {
+    "id": 6,
+    "con_nombre": "Hola {nombre}, ¿todo bien por allá? Pablo de la Zofri en Iquique. Le consulto algo puntual — ¿ya están aprovechando los lives en redes para vender?",
+    "generico": "Hola case, ¿todo bien por allá? Pablo de la Zofri en Iquique. Le consulto algo puntual — ¿ya están aprovechando los lives en redes para vender?"
+  },
+  {
+    "id": 7,
+    "con_nombre": "Hola {nombre}, ¿cómo le va? Le escribe Pablo, de la Zofri en Iquique. Una duda breve: ¿usan Facebook o Instagram Live como canal de ventas?",
+    "generico": "Hola case, ¿cómo le va? Le escribe Pablo, de la Zofri en Iquique. Una duda breve: ¿usan Facebook o Instagram Live como canal de ventas?"
+  },
+  {
+    "id": 8,
+    "con_nombre": "Hola {nombre}, ¿qué tal? Pablo de la Zofri en Iquique por acá. Le hago una consulta rápida — ¿usted o su equipo venden a través de lives?",
+    "generico": "Hola case, ¿qué tal? Pablo de la Zofri en Iquique por acá. Le hago una consulta rápida — ¿usted o su equipo venden a través de lives?"
+  },
+  {
+    "id": 9,
+    "con_nombre": "Hola {nombre}, ¿cómo está? Soy Pablo desde la Zofri. Oiga, le pregunto algo corto — ¿han hecho lives de ventas o aún no lo están usando?",
+    "generico": "Hola case, ¿cómo está? Soy Pablo desde la Zofri. Oiga, le pregunto algo corto — ¿han hecho lives de ventas o aún no lo están usando?"
+  },
+  {
+    "id": 10,
+    "con_nombre": "Hola {nombre}, ¿todo bien? Pablo de la Zofri en Iquique. Le hago una pregunta directa — ¿están haciendo ventas por live en redes o todavía no?",
+    "generico": "Hola case, ¿todo bien? Pablo de la Zofri en Iquique. Le hago una pregunta directa — ¿están haciendo ventas por live en redes o todavía no?"
+  }
+]
