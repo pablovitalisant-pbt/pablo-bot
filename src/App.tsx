@@ -1,25 +1,68 @@
-import { useState, useEffect } from 'react';
-import { Bot, CheckCircle, Clock, AlertCircle, MessageSquare, LayoutDashboard, FileJson, History, Settings, LogOut } from 'lucide-react';
-import { motion } from 'motion/react';
+import { useState, useEffect, useCallback } from 'react';
+import { Bot, LayoutDashboard, FileJson, History, Settings, LogOut } from 'lucide-react';
+
+interface Lead {
+  id: string;
+  nombre: string | null;
+  url: string;
+  estado: string;
+  updatedAt?: string;
+}
+
+interface BotStatus {
+  running: boolean;
+  dailyCount: number;
+  maxDaily: number;
+}
 
 export default function App() {
-  const [status, setStatus] = useState<any>(null);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [botStatus, setBotStatus] = useState<BotStatus>({ running: false, dailyCount: 0, maxDaily: 20 });
+  const [botLoading, setBotLoading] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [leadsRes, statusRes] = await Promise.all([
+        fetch('/api/leads'),
+        fetch('/api/bot/status'),
+      ]);
+      const leadsData = await leadsRes.json();
+      const statusData = await statusRes.json();
+      if (leadsData.ok) setLeads(leadsData.result);
+      if (statusData.ok) setBotStatus({ running: statusData.running, dailyCount: statusData.dailyCount, maxDaily: statusData.maxDaily });
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchStatus = async () => {
-      try {
-        const res = await fetch('/api/status');
-        const data = await res.json();
-        setStatus(data);
-      } catch (e) {
-        console.error(e);
-      }
-    };
-
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 30000);
+    fetchData();
+    const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchData]);
+
+  const handleStartBot = async () => {
+    setBotLoading(true);
+    await fetch('/api/bot/start', { method: 'POST' });
+    await fetchData();
+    setBotLoading(false);
+  };
+
+  const handleStopBot = async () => {
+    setBotLoading(true);
+    await fetch('/api/bot/stop', { method: 'POST' });
+    await fetchData();
+    setBotLoading(false);
+  };
+
+  const frioCount = leads.filter(l => l.estado === 'frio').length;
+  const dmCount = leads.filter(l => l.estado === 'dm').length;
+  const lastProcessed = leads
+    .filter(l => l.estado === 'dm')
+    .sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))
+    .slice(0, 10);
+
+  const progressPct = botStatus.maxDaily > 0 ? Math.round((botStatus.dailyCount / botStatus.maxDaily) * 100) : 0;
 
   return (
     <div className="flex min-h-screen bg-brand-bg">
@@ -31,7 +74,7 @@ export default function App() {
           </div>
           PABLO BOT
         </div>
-        
+
         <nav>
           <ul className="flex flex-col gap-2">
             <NavItem icon={<LayoutDashboard size={18} />} label="Dashboard" active />
@@ -44,9 +87,9 @@ export default function App() {
 
         <div className="mt-auto">
           <div className="bg-[#fff1eb] p-5 rounded-2xl">
-            <div className="text-sm font-bold text-brand-primary mb-1">Próximo Envío</div>
-            <div className="text-2xl font-extrabold text-brand-primary">22:14 min</div>
-            <div className="text-[11px] text-brand-primary/70 mt-1">Intervalo: 25-45m</div>
+            <div className="text-sm font-bold text-brand-primary mb-1">Intervalo</div>
+            <div className="text-2xl font-extrabold text-brand-primary">25–45 min</div>
+            <div className="text-[11px] text-brand-primary/70 mt-1">Entre mensajes</div>
           </div>
         </div>
       </aside>
@@ -58,37 +101,54 @@ export default function App() {
             <h1 className="text-[28px] font-extrabold text-brand-text">Panel de Control</h1>
             <p className="text-[#65676b] text-sm">Automatización de prospección Zofri Iquique</p>
           </div>
-          <div className="flex items-center gap-2 bg-[#e7f3ef] text-brand-secondary px-4 py-2 rounded-full text-sm font-semibold">
-            <div className={`w-2 h-2 rounded-full bg-brand-secondary ${status ? 'animate-pulse' : 'opacity-50'}`} />
-            WhatsApp Conectado ✓
+          <div className="flex items-center gap-3">
+            {botStatus.running ? (
+              <button
+                onClick={handleStopBot}
+                disabled={botLoading}
+                className="flex items-center gap-2 bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-semibold hover:bg-red-200 transition-colors disabled:opacity-50"
+              >
+                <div className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+                ⏹ Detener Bot
+              </button>
+            ) : (
+              <button
+                onClick={handleStartBot}
+                disabled={botLoading}
+                className="flex items-center gap-2 bg-[#e7f3ef] text-brand-secondary px-4 py-2 rounded-full text-sm font-semibold hover:bg-green-100 transition-colors disabled:opacity-50"
+              >
+                <div className="w-2 h-2 rounded-full bg-brand-secondary" />
+                ▶ Iniciar Bot
+              </button>
+            )}
           </div>
         </header>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <StatCard 
-            value="08 / 20" 
-            label="Mensajes Hoy" 
-            progress={40}
+          <StatCard
+            value={`${botStatus.dailyCount} / ${botStatus.maxDaily}`}
+            label="Mensajes Hoy"
+            progress={progressPct}
           />
-          <StatCard 
-            value="142" 
-            label="Prospectos Fríos" 
+          <StatCard
+            value={String(frioCount)}
+            label="Prospectos Fríos"
           />
-          <StatCard 
-            value="45" 
-            label="Convertidos a DM" 
+          <StatCard
+            value={String(dmCount)}
+            label="Convertidos a DM"
           />
         </div>
 
         <div className="flex gap-6 flex-1 min-h-0">
           {/* Prospectos Table */}
           <div className="flex-1 bg-white rounded-2xl shadow-brand-card border border-brand-gray-light flex flex-col overflow-hidden">
-            <div className="p-5 border-bottom border-brand-gray-light flex justify-between items-center">
+            <div className="p-5 border-b border-brand-gray-light flex justify-between items-center">
               <h3 className="text-base font-bold text-brand-text">Últimos Prospectos Procesados</h3>
               <span className="text-xs text-brand-primary font-semibold">Hoja: Prospectos</span>
             </div>
-            
+
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
@@ -100,43 +160,41 @@ export default function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  <TableRow id="#882" nombre="Juan Carlos Perez" status="DM" action="Enviado: f3.dm1 ✓" />
-                  <TableRow id="#883" nombre="Maria Elena Soto" status="FRÍO" action="Pendiente..." />
-                  <TableRow id="#884" nombre="Tienda Sport-X" status="DM" action="Enviado: f3.dm1 ✓" />
-                  <TableRow id="#885" nombre="Distribuidora Loa" status="FRÍO" action="Pendiente..." />
+                  {lastProcessed.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-5 py-8 text-center text-sm text-[#65676b]">
+                        No hay prospectos procesados aún
+                      </td>
+                    </tr>
+                  ) : (
+                    lastProcessed.map(l => (
+                      <TableRow
+                        key={l.id}
+                        id={`#${l.id}`}
+                        nombre={l.nombre || 'Sin nombre'}
+                        status="DM"
+                        action={l.updatedAt ? `Enviado: ${new Date(l.updatedAt).toLocaleString('es-CL')}` : 'Enviado: f3.dm1 ✓'}
+                      />
+                    ))
+                  )}
                 </tbody>
               </table>
-            </div>
-
-            <div className="p-5 bg-[#fafafa] mt-auto border-t border-brand-gray-light">
-              <div className="text-[12px] font-bold text-[#65676b] mb-2 uppercase">ÚLTIMO MENSAJE SELECCIONADO (RANDOM ID: 4)</div>
-              <div className="bg-[#f0f2f5] p-3 rounded-lg italic text-[#4b4b4b] border-l-4 border-brand-primary text-xs">
-                "Hola {'{nombre}'}, ¿qué tal? Pablo de la Zofri por aquí. Una pregunta al grano: ¿están vendiendo por lives en Facebook o Instagram?"
-              </div>
             </div>
           </div>
 
           {/* Config Panel */}
           <div className="w-[300px] flex flex-col gap-5 shrink-0">
             <ConfigCard title="Estado del Sistema">
-              <ConfigItem label="Service Account" value="ACTIVE" valueColor="text-brand-secondary" />
+              <ConfigItem label="Bot" value={botStatus.running ? 'ACTIVO' : 'DETENIDO'} valueColor={botStatus.running ? 'text-brand-secondary' : 'text-red-500'} />
               <ConfigItem label="Cron Scheduler" value="EVERY 1M" />
               <ConfigItem label="Timezone" value="CL/Santiago" />
             </ConfigCard>
 
             <ConfigCard title="Límites Diarios">
-              <ConfigItem label="Máximo Diario" value="20" />
-              <ConfigItem label="Enviados hoy" value="8" />
-              <ConfigItem label="Restantes" value="12" />
+              <ConfigItem label="Máximo Diario" value={String(botStatus.maxDaily)} />
+              <ConfigItem label="Enviados hoy" value={String(botStatus.dailyCount)} />
+              <ConfigItem label="Restantes" value={String(Math.max(0, botStatus.maxDaily - botStatus.dailyCount))} />
             </ConfigCard>
-
-            <div className="p-4 rounded-xl bg-[#1c1e21] text-[#00ff00] font-mono text-[11px] flex-1 overflow-y-auto leading-relaxed">
-              <div>[09:14:02] Checking Sheet...</div>
-              <div>[09:14:03] 2 leads found (frio).</div>
-              <div>[09:14:05] Waiting 25-45m...</div>
-              <div>[09:42:11] Sending to #882...</div>
-              <div className="text-white">[09:42:14] Message sent!</div>
-            </div>
           </div>
         </div>
       </main>

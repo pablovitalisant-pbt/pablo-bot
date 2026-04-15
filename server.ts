@@ -4,7 +4,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import fs from 'fs-extra';
 import * as whatsapp from './src/whatsapp.js';
-import { startScheduler } from './src/scheduler.js';
+import { startScheduler, startBot, stopBot, schedulerRunning } from './src/scheduler.js';
 
 dotenv.config();
 
@@ -72,6 +72,35 @@ async function startServer() {
     } catch (error) {
       res.status(500).json({ ok: false, error: 'Error al eliminar lead' });
     }
+  });
+
+  // Bot control endpoints
+  app.post('/api/bot/start', (req, res) => {
+    startBot();
+    res.json({ ok: true, status: 'running' });
+  });
+
+  app.post('/api/bot/stop', (req, res) => {
+    stopBot();
+    res.json({ ok: true, status: 'stopped' });
+  });
+
+  app.get('/api/bot/status', async (req, res) => {
+    const DAILY_COUNT_PATH = path.resolve(process.cwd(), 'data/daily_count.json');
+    let dailyCount = 0;
+    try {
+      if (await fs.pathExists(DAILY_COUNT_PATH)) {
+        const data = await fs.readJson(DAILY_COUNT_PATH);
+        const today = new Date().toISOString().slice(0, 10);
+        if (data.date === today) dailyCount = data.count;
+      }
+    } catch {}
+    res.json({
+      ok: true,
+      running: schedulerRunning,
+      dailyCount,
+      maxDaily: parseInt(process.env.MAX_DAILY || '20'),
+    });
   });
 
   // QR endpoint

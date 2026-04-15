@@ -46,11 +46,25 @@ async function updateLastSent() {
   await fs.writeJson(LAST_SENT_PATH, { timestamp: DateTime.now().toISO() });
 }
 
+export let schedulerRunning = false;
+
+export function startBot() {
+  schedulerRunning = true;
+  console.log('Bot iniciado ✓');
+}
+
+export function stopBot() {
+  schedulerRunning = false;
+  console.log('Bot detenido ✓');
+}
+
 export function startScheduler() {
   console.log('Scheduler iniciado ✓');
 
   // Cada 1 minuto
   cron.schedule('* * * * *', async () => {
+    if (!schedulerRunning) return;
+
     try {
       const now = DateTime.now().setZone('America/Santiago');
       
