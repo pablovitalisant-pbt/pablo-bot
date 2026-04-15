@@ -74,6 +74,48 @@ async function startServer() {
     }
   });
 
+  // Messages endpoints
+  const messagesPath = path.resolve(process.cwd(), 'data/messages.json');
+
+  app.get('/api/messages', async (req, res) => {
+    try {
+      const messages = (await fs.pathExists(messagesPath)) ? await fs.readJson(messagesPath) : [];
+      res.json({ ok: true, result: messages });
+    } catch (error) {
+      res.status(500).json({ ok: false, error: 'Error al leer mensajes' });
+    }
+  });
+
+  app.put('/api/messages', async (req, res) => {
+    try {
+      await fs.writeJson(messagesPath, req.body, { spaces: 2 });
+      res.json({ ok: true });
+    } catch (error) {
+      res.status(500).json({ ok: false, error: 'Error al guardar mensajes' });
+    }
+  });
+
+  // Logs endpoint
+  const logsPath = path.resolve(process.cwd(), 'data/send_log.json');
+
+  app.get('/api/logs', async (req, res) => {
+    try {
+      const logs = (await fs.pathExists(logsPath)) ? await fs.readJson(logsPath) : [];
+      res.json({ ok: true, result: logs });
+    } catch (error) {
+      res.status(500).json({ ok: false, error: 'Error al leer logs' });
+    }
+  });
+
+  // Config endpoint
+  app.post('/api/config', (req, res) => {
+    const { maxDaily } = req.body;
+    if (maxDaily !== undefined) {
+      process.env.MAX_DAILY = String(parseInt(maxDaily));
+    }
+    res.json({ ok: true, maxDaily: process.env.MAX_DAILY });
+  });
+
   // Bot control endpoints
   app.post('/api/bot/start', (req, res) => {
     startBot();

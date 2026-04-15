@@ -9,6 +9,7 @@ import { Lead, DailyCount, LastSent } from './types.js';
 const DAILY_COUNT_PATH = path.resolve(process.cwd(), 'data/daily_count.json');
 const LAST_SENT_PATH = path.resolve(process.cwd(), 'data/last_sent.json');
 const LEADS_PATH = path.resolve(process.cwd(), 'data/leads.json');
+const SEND_LOG_PATH = path.resolve(process.cwd(), 'data/send_log.json');
 
 async function getLeads(): Promise<Lead[]> {
   if (await fs.pathExists(LEADS_PATH)) {
@@ -131,10 +132,21 @@ export function startScheduler() {
       targetLead.f3.fechaEnvio = DateTime.now().toISO()!;
       targetLead.estado = 'dm';
       targetLead.updatedAt = DateTime.now().toISO()!;
-      
+
       leads[targetLeadIndex] = targetLead;
       await saveLeads(leads);
       console.log('Leads local actualizado ✓');
+
+      // Guardar log de envío
+      const logs = (await fs.pathExists(SEND_LOG_PATH)) ? await fs.readJson(SEND_LOG_PATH) : [];
+      logs.unshift({
+        timestamp: DateTime.now().toISO(),
+        nombre: targetLead.nombre || null,
+        url: targetLead.url,
+        mensaje_id: msgId,
+        estado: 'enviado',
+      });
+      await fs.writeJson(SEND_LOG_PATH, logs, { spaces: 2 });
 
       // Actualizar contadores
       await updateDailyCount(daily.count + 1);
