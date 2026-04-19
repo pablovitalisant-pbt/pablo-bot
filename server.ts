@@ -97,6 +97,7 @@ async function startServer() {
 
   // Logs endpoint
   const logsPath = path.resolve(process.cwd(), 'data/send_log.json');
+  const botConfigPath = path.resolve(process.cwd(), 'data/bot_config.json');
 
   app.get('/api/logs', async (req, res) => {
     try {
@@ -108,12 +109,28 @@ async function startServer() {
   });
 
   // Config endpoint
-  app.post('/api/config', (req, res) => {
-    const { maxDaily } = req.body;
-    if (maxDaily !== undefined) {
-      process.env.MAX_DAILY = String(parseInt(maxDaily));
+  app.get('/api/config', async (req, res) => {
+    try {
+      const config = (await fs.pathExists(botConfigPath))
+        ? await fs.readJson(botConfigPath)
+        : { maxDaily: 20, startHour: 9, endHour: 18, allowedDays: [1,2,3,4,5] };
+      res.json({ ok: true, ...config });
+    } catch {
+      res.status(500).json({ ok: false });
     }
-    res.json({ ok: true, maxDaily: process.env.MAX_DAILY });
+  });
+
+  app.post('/api/config', async (req, res) => {
+    try {
+      const current = (await fs.pathExists(botConfigPath))
+        ? await fs.readJson(botConfigPath)
+        : { maxDaily: 20, startHour: 9, endHour: 18, allowedDays: [1,2,3,4,5] };
+      const updated = { ...current, ...req.body };
+      await fs.writeJson(botConfigPath, updated, { spaces: 2 });
+      res.json({ ok: true, ...updated });
+    } catch {
+      res.status(500).json({ ok: false });
+    }
   });
 
   // Bot control endpoints
@@ -137,11 +154,17 @@ async function startServer() {
         if (data.date === today) dailyCount = data.count;
       }
     } catch {}
+    const config = (await fs.pathExists(botConfigPath))
+      ? await fs.readJson(botConfigPath)
+      : { maxDaily: 20, startHour: 9, endHour: 18, allowedDays: [1,2,3,4,5] };
     res.json({
       ok: true,
       running: schedulerRunning,
       dailyCount,
-      maxDaily: parseInt(process.env.MAX_DAILY || '20'),
+      maxDaily: config.maxDaily,
+      startHour: config.startHour,
+      endHour: config.endHour,
+      allowedDays: config.allowedDays,
     });
   });
 

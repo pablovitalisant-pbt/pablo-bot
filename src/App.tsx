@@ -15,6 +15,9 @@ interface BotStatus {
   running: boolean;
   dailyCount: number;
   maxDaily: number;
+  startHour: number;
+  endHour: number;
+  allowedDays: number[];
 }
 
 interface Message {
@@ -301,23 +304,45 @@ function LogsView() {
 
 function ConfigView({ botStatus, onSaved }: { botStatus: BotStatus; onSaved: () => void }) {
   const [maxDaily, setMaxDaily] = useState(String(botStatus.maxDaily));
+  const [startHour, setStartHour] = useState(String(botStatus.startHour));
+  const [endHour, setEndHour] = useState(String(botStatus.endHour));
+  const [allowedDays, setAllowedDays] = useState<number[]>(botStatus.allowedDays);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  useEffect(() => { setMaxDaily(String(botStatus.maxDaily)); }, [botStatus.maxDaily]);
+  useEffect(() => {
+    setMaxDaily(String(botStatus.maxDaily));
+    setStartHour(String(botStatus.startHour));
+    setEndHour(String(botStatus.endHour));
+    setAllowedDays(botStatus.allowedDays);
+  }, [botStatus]);
+
+  const toggleDay = (day: number) => {
+    setAllowedDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]);
+  };
 
   const handleSave = async () => {
     setSaving(true);
     await fetch('/api/config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ maxDaily: parseInt(maxDaily) }),
+      body: JSON.stringify({
+        maxDaily: parseInt(maxDaily),
+        startHour: parseInt(startHour),
+        endHour: parseInt(endHour),
+        allowedDays,
+      }),
     });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
     onSaved();
   };
+
+  const dayLabels: { num: number; label: string }[] = [
+    { num: 1, label: 'Lun' }, { num: 2, label: 'Mar' }, { num: 3, label: 'Mié' },
+    { num: 4, label: 'Jue' }, { num: 5, label: 'Vie' }, { num: 6, label: 'Sáb' }, { num: 7, label: 'Dom' },
+  ];
 
   return (
     <>
@@ -334,15 +359,53 @@ function ConfigView({ botStatus, onSaved }: { botStatus: BotStatus; onSaved: () 
           <div className="flex flex-col gap-2">
             <label className="text-xs font-bold text-[#65676b] uppercase">Máximo mensajes por día</label>
             <input
-              type="number"
-              min={1}
-              max={100}
-              value={maxDaily}
+              type="number" min={1} max={200} value={maxDaily}
               onChange={e => setMaxDaily(e.target.value)}
               className="border border-brand-gray-light rounded-lg px-4 py-3 text-sm font-mono focus:outline-none focus:border-brand-primary w-32"
             />
-            <p className="text-xs text-[#65676b]">Actualmente: {botStatus.dailyCount} enviados hoy</p>
           </div>
+
+          <div className="text-sm font-bold text-brand-text uppercase tracking-tight border-b border-brand-gray-light pb-3">
+            Horario de Envío
+          </div>
+          <div className="flex gap-4 items-center">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold text-[#65676b] uppercase">Hora inicio</label>
+              <input
+                type="number" min={0} max={23} value={startHour}
+                onChange={e => setStartHour(e.target.value)}
+                className="border border-brand-gray-light rounded-lg px-4 py-3 text-sm font-mono focus:outline-none focus:border-brand-primary w-24"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold text-[#65676b] uppercase">Hora fin</label>
+              <input
+                type="number" min={0} max={23} value={endHour}
+                onChange={e => setEndHour(e.target.value)}
+                className="border border-brand-gray-light rounded-lg px-4 py-3 text-sm font-mono focus:outline-none focus:border-brand-primary w-24"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-[#65676b] uppercase">Días activos</label>
+            <div className="flex gap-2 flex-wrap">
+              {dayLabels.map(({ num, label }) => (
+                <button
+                  key={num}
+                  onClick={() => toggleDay(num)}
+                  className={`px-3 py-2 rounded-lg text-xs font-bold border transition-colors ${
+                    allowedDays.includes(num)
+                      ? 'bg-brand-primary text-white border-brand-primary'
+                      : 'bg-white text-[#65676b] border-brand-gray-light hover:bg-slate-50'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <button
             onClick={handleSave}
             disabled={saving}
@@ -350,19 +413,6 @@ function ConfigView({ botStatus, onSaved }: { botStatus: BotStatus; onSaved: () 
           >
             {saved ? '✓ Guardado' : saving ? 'Guardando...' : 'Guardar cambios'}
           </button>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-brand-gray-light shadow-brand-card p-6 flex flex-col gap-4">
-          <div className="text-sm font-bold text-brand-text uppercase tracking-tight border-b border-brand-gray-light pb-3">
-            Horario Activo
-          </div>
-          <div className="flex flex-col gap-2 text-sm text-brand-text">
-            <div className="flex justify-between"><span className="text-[#65676b]">Días</span><span className="font-semibold">Lunes – Viernes</span></div>
-            <div className="flex justify-between"><span className="text-[#65676b]">Horario</span><span className="font-semibold">09:00 – 18:00</span></div>
-            <div className="flex justify-between"><span className="text-[#65676b]">Zona horaria</span><span className="font-semibold">America/Santiago</span></div>
-            <div className="flex justify-between"><span className="text-[#65676b]">Intervalo entre envíos</span><span className="font-semibold">25 – 45 min</span></div>
-          </div>
-          <p className="text-[11px] text-[#65676b] mt-1">El horario no es configurable desde la UI en esta versión.</p>
         </div>
       </div>
     </>
@@ -374,16 +424,18 @@ function ConfigView({ botStatus, onSaved }: { botStatus: BotStatus; onSaved: () 
 export default function App() {
   const [section, setSection] = useState<Section>('dashboard');
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [botStatus, setBotStatus] = useState<BotStatus>({ running: false, dailyCount: 0, maxDaily: 20 });
+  const [botStatus, setBotStatus] = useState<BotStatus>({ running: false, dailyCount: 0, maxDaily: 20, startHour: 9, endHour: 18, allowedDays: [1,2,3,4,5] });
   const [botLoading, setBotLoading] = useState(false);
 
   const fetchDashboardData = useCallback(async () => {
     try {
-      const [leadsRes, statusRes] = await Promise.all([fetch('/api/leads'), fetch('/api/bot/status')]);
+      const [leadsRes, statusRes, configRes] = await Promise.all([fetch('/api/leads'), fetch('/api/bot/status'), fetch('/api/config')]);
       const leadsData = await leadsRes.json();
       const statusData = await statusRes.json();
+      const configData = await configRes.json();
       if (leadsData.ok) setLeads(leadsData.result);
-      if (statusData.ok) setBotStatus({ running: statusData.running, dailyCount: statusData.dailyCount, maxDaily: statusData.maxDaily });
+      if (statusData.ok) setBotStatus(prev => ({ ...prev, running: statusData.running, dailyCount: statusData.dailyCount, maxDaily: statusData.maxDaily, startHour: statusData.startHour, endHour: statusData.endHour, allowedDays: statusData.allowedDays }));
+      if (configData.ok) setBotStatus(prev => ({ ...prev, ...configData }));
     } catch (e) { console.error(e); }
   }, []);
 

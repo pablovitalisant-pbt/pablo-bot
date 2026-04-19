@@ -62,27 +62,35 @@ export function stopBot() {
 export function startScheduler() {
   console.log('Scheduler iniciado ✓');
 
-  // Cada 10 segundos
   cron.schedule('*/10 * * * * *', async () => {
     if (!schedulerRunning) return;
 
     try {
       const now = DateTime.now().setZone('America/Santiago');
 
+      // Leer config desde archivo
+      const configPath = path.resolve(process.cwd(), 'data/bot_config.json');
+      const config = (await fs.pathExists(configPath))
+        ? await fs.readJson(configPath)
+        : { maxDaily: 20, startHour: 9, endHour: 18, allowedDays: [1,2,3,4,5] };
+
+      // Validar horario
+      if (now.hour < config.startHour || now.hour >= config.endHour) return;
+
+      // Validar día
+      if (!config.allowedDays.includes(now.weekday)) return;
+
       if (!getIsConnected()) {
         console.log('Esperando conexión de WhatsApp...');
         return;
       }
 
-      // Revisar límite diario
       const daily = await getDailyCount();
-      const maxDaily = parseInt(process.env.MAX_DAILY || '20');
-      if (daily.count >= maxDaily) {
-        console.log(`Límite diario alcanzado (${maxDaily}). Esperando al día siguiente.`);
+      if (daily.count >= config.maxDaily) {
+        console.log(`Límite diario alcanzado (${config.maxDaily}). Esperando al día siguiente.`);
         return;
       }
 
-      // Revisar intervalo entre mensajes (25-45 minutos)
       const lastSent = await getLastSent();
       if (lastSent) {
         const lastSentTime = DateTime.fromISO(lastSent.timestamp);
@@ -91,14 +99,12 @@ export function startScheduler() {
         if (diffSeconds < nextInterval) return;
       }
 
-      // Si llegamos aquí, es momento de enviar
       console.log('Buscando prospectos...');
       const leads = await getLeads();
-      
-      // Filtrar leads: estado == "frio" Y url incluye "wa.me" Y f3.dm1_enviado == false
+
       const targetLeadIndex = leads.findIndex(l => {
-        return l.estado === 'frio' && 
-               l.url.includes('wa.me') && 
+        return l.estado === 'frio' &&
+               l.url.includes('wa.me') &&
                (!l.f3 || l.f3.dm1_enviado === false);
       });
 
@@ -109,14 +115,13 @@ export function startScheduler() {
 
       const targetLead = leads[targetLeadIndex];
       console.log(`Enviando mensaje a: ${targetLead.nombre || 'Sin nombre'} (${targetLead.url})`);
-      
+
       const jid = extractJidFromUrl(targetLead.url);
       const { text, id: msgId } = await getRandomMessage(targetLead as any);
-      
+
       await sendMessage(jid, text);
       console.log(`Mensaje enviado (ID: ${msgId}) ✓`);
 
-      // Actualizar Lead localmente
       targetLead.f3.dm1_enviado = true;
       targetLead.f3.fechaEnvio = DateTime.now().toISO()!;
       targetLead.estado = 'dm';
@@ -126,7 +131,6 @@ export function startScheduler() {
       await saveLeads(leads);
       console.log('Leads local actualizado ✓');
 
-      // Guardar log de envío
       const logs = (await fs.pathExists(SEND_LOG_PATH)) ? await fs.readJson(SEND_LOG_PATH) : [];
       logs.unshift({
         timestamp: DateTime.now().toISO(),
@@ -137,7 +141,6 @@ export function startScheduler() {
       });
       await fs.writeJson(SEND_LOG_PATH, logs, { spaces: 2 });
 
-      // Actualizar contadores
       await updateDailyCount(daily.count + 1);
       await updateLastSent();
 

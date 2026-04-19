@@ -1,0 +1,6 @@
+{
+  "maxDaily": 20,
+  "startHour": 9,
+  "endHour": 18,
+  "allowedDays": [1, 2, 3, 4, 5]
+}
