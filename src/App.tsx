@@ -1,7 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Bot, LayoutDashboard, FileJson, History, Settings } from 'lucide-react';
 
-type Section = 'dashboard' | 'messages' | 'logs' | 'crm' | 'config';
+type Section = 'dashboard' | 'messages' | 'logs' | 'leads' | 'nuevo-lead' | 'pipeline' | 'config';
+
+interface LeadDetalle {
+  id: string | number;
+  nombre: string | null;
+  url: string;
+  estado: string;
+  notas?: string;
+  updatedAt?: string;
+  f3?: { dm1_enviado: boolean; dm1_respondio: boolean; fechaEnvio: string | null };
+  f4?: { dms: { e: boolean; r: boolean; fechaEnvio: string | null }[] };
+}
 
 interface Lead {
   id: string;
@@ -426,6 +437,7 @@ export default function App() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [botStatus, setBotStatus] = useState<BotStatus>({ running: false, dailyCount: 0, maxDaily: 20, startHour: 9, endHour: 18, allowedDays: [1,2,3,4,5] });
   const [botLoading, setBotLoading] = useState(false);
+  const [selectedLeadId, setSelectedLeadId] = useState<string | number | null>(null);
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -449,11 +461,13 @@ export default function App() {
   const handleStopBot = async () => { setBotLoading(true); await fetch('/api/bot/stop', { method: 'POST' }); await fetchDashboardData(); setBotLoading(false); };
 
   const navItems: { id: Section; icon: JSX.Element; label: string }[] = [
-    { id: 'dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
-    { id: 'messages', icon: <FileJson size={18} />, label: 'Mensajes (.json)' },
-    { id: 'logs', icon: <History size={18} />, label: 'Logs de Envío' },
-    { id: 'crm', icon: <span>👥</span>, label: 'CRM Anita' },
-    { id: 'config', icon: <Settings size={18} />, label: 'Configuración' },
+    { id: 'dashboard',  icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
+    { id: 'messages',   icon: <FileJson size={18} />,        label: 'Mensajes (.json)' },
+    { id: 'logs',       icon: <History size={18} />,         label: 'Logs de Envío' },
+    { id: 'leads',      icon: <span>👥</span>,               label: 'Leads' },
+    { id: 'nuevo-lead', icon: <span>➕</span>,               label: 'Nuevo Lead' },
+    { id: 'pipeline',   icon: <span>📊</span>,               label: 'Pipeline' },
+    { id: 'config',     icon: <Settings size={18} />,        label: 'Configuración' },
   ];
 
   return (
@@ -504,17 +518,192 @@ export default function App() {
         )}
         {section === 'messages' && <MessagesView />}
         {section === 'logs' && <LogsView />}
-        {section === 'crm' && (
-          <div style={{ width: '100%', height: 'calc(100vh - 60px)', overflow: 'auto' }}>
-            <iframe
-              src="/anita"
-              style={{ width: '100%', height: '100%', border: 'none', minWidth: '1200px' }}
-            />
-          </div>
-        )}
+        {section === 'leads' && <LeadsView leads={leads as LeadDetalle[]} onSelect={(id) => { setSelectedLeadId(id); setSection('lead-detalle' as any); }} />}
+        {section === 'nuevo-lead' && <NuevoLeadView onSaved={() => { fetchDashboardData(); setSection('leads'); }} />}
+        {section === 'pipeline' && <PipelineView leads={leads as LeadDetalle[]} />}
         {section === 'config' && <ConfigView botStatus={botStatus} onSaved={fetchDashboardData} />}
       </main>
     </div>
+  );
+}
+
+// ─── LeadsView ────────────────────────────────────────────────────────────────
+function LeadsView({ leads, onSelect }: { leads: LeadDetalle[]; onSelect: (id: string | number) => void }) {
+  const [search, setSearch] = useState('');
+  const filtered = leads.filter(l => {
+    const q = search.toLowerCase();
+    return (l.nombre || '').toLowerCase().includes(q) ||
+           l.url.toLowerCase().includes(q) ||
+           (l.notas || '').toLowerCase().includes(q);
+  });
+
+  return (
+    <>
+      <header>
+        <h1 className="text-[28px] font-extrabold text-brand-text">Leads</h1>
+        <p className="text-[#65676b] text-sm">Base de prospectos activa</p>
+      </header>
+      <input
+        type="text"
+        placeholder="Buscar por nombre, número o notas..."
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        className="w-full border border-brand-gray-light rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brand-primary mb-4"
+      />
+      <div className="flex flex-col gap-3">
+        {filtered.length === 0 && (
+          <p className="text-center text-[#65676b] py-12">No hay leads que coincidan.</p>
+        )}
+        {filtered.map(l => (
+          <div
+            key={l.id}
+            onClick={() => onSelect(l.id)}
+            className="bg-white border border-brand-gray-light rounded-2xl px-5 py-4 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors shadow-brand-card"
+          >
+            <div>
+              <div className="font-bold text-brand-text text-sm">
+                {l.nombre || l.url.replace('https://wa.me/', '')}
+              </div>
+              <div className="text-xs text-[#65676b] mt-1">{l.notas || l.url}</div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className={`px-2 py-1 rounded text-[11px] font-bold uppercase ${
+                l.estado === 'frio' ? 'bg-blue-100 text-blue-700' :
+                l.estado === 'dm'   ? 'bg-[#e7f3ef] text-brand-secondary' :
+                l.estado === 'cliente' ? 'bg-green-100 text-green-800' :
+                'bg-gray-100 text-gray-500'
+              }`}>{l.estado}</span>
+              <span className="text-[#65676b] text-lg">→</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+// ─── NuevoLeadView ────────────────────────────────────────────────────────────
+function NuevoLeadView({ onSaved }: { onSaved: () => void }) {
+  const [nombre, setNombre] = useState('');
+  const [url, setUrl] = useState('');
+  const [notas, setNotas] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!url.trim()) return;
+    setSaving(true);
+    const nuevo = {
+      id: Date.now(),
+      nombre: nombre.trim() || null,
+      pais: 'Otro',
+      url: url.trim(),
+      producto: '',
+      notas: notas.trim(),
+      estado: 'frio',
+      fecha: new Date().toISOString(),
+      f1: {}, f2: {},
+      f3: { dm1_enviado: false, dm1_respondio: false, fechaEnvio: null },
+      f4: { dms: Array(4).fill(null).map(() => ({ e: false, r: false, fechaEnvio: null })) },
+      f5: { descartado: false },
+      historial: [],
+      updatedAt: new Date().toISOString(),
+    };
+    await fetch('/api/leads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(nuevo),
+    });
+    setSaving(false);
+    onSaved();
+  };
+
+  return (
+    <>
+      <header>
+        <h1 className="text-[28px] font-extrabold text-brand-text">Nuevo Lead</h1>
+        <p className="text-[#65676b] text-sm">Agrega un prospecto manualmente</p>
+      </header>
+      <div className="bg-white rounded-2xl border border-brand-gray-light shadow-brand-card p-6 flex flex-col gap-4 max-w-lg">
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-bold text-[#65676b] uppercase">Nombre (opcional)</label>
+          <input
+            type="text" value={nombre} onChange={e => setNombre(e.target.value)}
+            placeholder="Nombre del prospecto"
+            className="border border-brand-gray-light rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-primary"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-bold text-[#65676b] uppercase">URL WhatsApp *</label>
+          <input
+            type="text" value={url} onChange={e => setUrl(e.target.value)}
+            placeholder="https://wa.me/56912345678"
+            className="border border-brand-gray-light rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-primary"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-bold text-[#65676b] uppercase">Notas</label>
+          <textarea
+            value={notas} onChange={e => setNotas(e.target.value)}
+            placeholder="Observaciones..."
+            rows={3}
+            className="border border-brand-gray-light rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-primary resize-none"
+          />
+        </div>
+        <button
+          onClick={handleSubmit} disabled={saving || !url.trim()}
+          className="self-start px-5 py-2 bg-brand-primary text-white text-sm font-semibold rounded-lg hover:opacity-90 disabled:opacity-50"
+        >
+          {saving ? 'Guardando...' : 'Guardar Lead'}
+        </button>
+      </div>
+    </>
+  );
+}
+
+// ─── PipelineView ─────────────────────────────────────────────────────────────
+function PipelineView({ leads }: { leads: LeadDetalle[] }) {
+  const columns = [
+    { id: 'frio',       label: '🥶 Frío',        color: 'border-t-blue-500' },
+    { id: 'dm',         label: '💬 En DMs',       color: 'border-t-brand-secondary' },
+    { id: 'cliente',    label: '✅ Clientes',     color: 'border-t-green-700' },
+    { id: 'descartado', label: '🗑️ Descartados', color: 'border-t-gray-400' },
+  ];
+
+  return (
+    <>
+      <header>
+        <h1 className="text-[28px] font-extrabold text-brand-text">Pipeline</h1>
+        <p className="text-[#65676b] text-sm">Estado del flujo de ventas</p>
+      </header>
+      <div className="flex gap-4 overflow-x-auto pb-4">
+        {columns.map(col => {
+          const colLeads = leads.filter(l => l.estado === col.id);
+          return (
+            <div key={col.id} className={`flex-shrink-0 w-64 bg-[#f0f2f5] rounded-2xl p-3 border-t-4 ${col.color}`}>
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-sm font-bold text-[#65676b]">{col.label}</span>
+                <span className="text-xs font-bold text-[#65676b]">({colLeads.length})</span>
+              </div>
+              <div className="flex flex-col gap-2 max-h-[60vh] overflow-y-auto">
+                {colLeads.length === 0 && (
+                  <p className="text-xs text-[#65676b] text-center py-4">Sin leads aquí</p>
+                )}
+                {colLeads.map(l => (
+                  <div key={l.id} className="bg-white rounded-xl p-3 shadow-sm">
+                    <div className="font-bold text-sm text-brand-text">
+                      {l.nombre || l.url.replace('https://wa.me/', '')}
+                    </div>
+                    <div className="text-[11px] text-[#65676b] font-mono mt-1">
+                      {l.updatedAt ? new Date(l.updatedAt).toLocaleDateString('es-CL') : '—'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
 
