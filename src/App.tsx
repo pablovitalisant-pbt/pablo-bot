@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Bot, LayoutDashboard, FileJson, History, Settings } from 'lucide-react';
 
-type Section = 'dashboard' | 'messages' | 'logs' | 'leads' | 'nuevo-lead' | 'pipeline' | 'config';
+type Section = 'dashboard' | 'messages' | 'logs' | 'leads' | 'nuevo-lead' | 'pipeline' | 'lead-detalle' | 'config';
 
 interface LeadDetalle {
   id: string | number;
@@ -518,12 +518,212 @@ export default function App() {
         )}
         {section === 'messages' && <MessagesView />}
         {section === 'logs' && <LogsView />}
-        {section === 'leads' && <LeadsView leads={leads as LeadDetalle[]} onSelect={(id) => { setSelectedLeadId(id); setSection('lead-detalle' as any); }} />}
+        {section === 'leads' && <LeadsView leads={leads as LeadDetalle[]} onSelect={(id) => { setSelectedLeadId(id); setSection('lead-detalle'); }} />}
+        {section === 'lead-detalle' && selectedLeadId !== null && (
+          <LeadDetalleView
+            leadId={selectedLeadId}
+            onBack={() => { setSection('leads'); fetchDashboardData(); }}
+          />
+        )}
         {section === 'nuevo-lead' && <NuevoLeadView onSaved={() => { fetchDashboardData(); setSection('leads'); }} />}
         {section === 'pipeline' && <PipelineView leads={leads as LeadDetalle[]} />}
         {section === 'config' && <ConfigView botStatus={botStatus} onSaved={fetchDashboardData} />}
       </main>
     </div>
+  );
+}
+
+// ─── LeadDetalleView ──────────────────────────────────────────────────────────
+const DM_INTERVALS = [0, 3, 7, 12, 21];
+
+function LeadDetalleView({ leadId, onBack }: { leadId: string | number; onBack: () => void }) {
+  const [lead, setLead] = useState<LeadDetalle | null>(null);
+  const [notas, setNotas] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const loadLead = async () => {
+    const res = await fetch('/api/leads');
+    const data = await res.json();
+    if (data.ok) {
+      const found = data.result.find((l: LeadDetalle) => String(l.id) === String(leadId));
+      if (found) { setLead(found); setNotas(found.notas || ''); }
+    }
+  };
+
+  useEffect(() => { loadLead(); }, [leadId]);
+
+  const patch = async (updated: LeadDetalle) => {
+    await fetch(`/api/leads/${updated.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updated),
+    });
+    setLead(updated);
+  };
+
+  const saveNotas = async () => {
+    if (!lead) return;
+    setSaving(true);
+    await patch({ ...lead, notas });
+    setSaving(false);
+  };
+
+  const toggleF3Enviado = async () => {
+    if (!lead) return;
+    const enviado = !lead.f3?.dm1_enviado;
+    const updated = {
+      ...lead,
+      estado: enviado ? 'dm' : 'frio',
+      f3: { ...lead.f3!, dm1_enviado: enviado, fechaEnvio: enviado ? new Date().toISOString() : null },
+    };
+    await patch(updated);
+  };
+
+  const toggleF3Respondio = async () => {
+    if (!lead) return;
+    await patch({ ...lead, f3: { ...lead.f3!, dm1_respondio: !lead.f3?.dm1_respondio } });
+  };
+
+  const toggleF4 = async (idx: number) => {
+    if (!lead || !lead.f4) return;
+    const dms = lead.f4.dms.map((dm, i) =>
+      i === idx ? { ...dm, e: !dm.e, fechaEnvio: !dm.e ? new Date().toISOString() : null } : dm
+    );
+    await patch({ ...lead, f4: { dms } });
+  };
+
+  const toggleCliente = async () => {
+    if (!lead) return;
+    const esCliente = lead.estado !== 'cliente';
+    await patch({ ...lead, estado: esCliente ? 'cliente' : 'dm' });
+  };
+
+  const toggleDescartado = async () => {
+    if (!lead) return;
+    await patch({ ...lead, estado: lead.estado === 'descartado' ? 'frio' : 'descartado' });
+  };
+
+  if (!lead) return <div className="p-8 text-[#65676b]">Cargando...</div>;
+
+  const numero = lead.url.replace('https://wa.me/', '');
+  const displayName = lead.nombre || numero;
+  const fechaDM1 = lead.f3?.fechaEnvio ? new Date(lead.f3.fechaEnvio) : null;
+
+  const getDMTag = (idx: number) => {
+    const dm = lead.f4?.dms[idx];
+    if (!dm) return null;
+    if (dm.e) return <span className="text-[11px] font-bold px-2 py-1 rounded bg-[#e7f3ef] text-brand-secondary">✓ Enviado {dm.fechaEnvio ? new Date(dm.fechaEnvio).toLocaleDateString('es-CL') : ''}</span>;
+    if (!lead.f3?.dm1_enviado) return <span className="text-[11px] font-bold px-2 py-1 rounded bg-gray-100 text-gray-400">⏳ Esperando DM1</span>;
+    if (!fechaDM1) return null;
+    const dueDate = new Date(fechaDM1);
+    dueDate.setDate(dueDate.getDate() + DM_INTERVALS[idx + 1]);
+    const today = new Date();
+    const diffDays = Math.ceil((dueDate.getTime() - today.getTime()) / 86400000);
+    if (today >= dueDate) return <span className="text-[11px] font-bold px-2 py-1 rounded bg-[#fff3e0] text-[#f57c00] animate-pulse">{diffDays === 0 ? '🔔 ¡Toca hoy!' : `⚠️ Vencido hace ${Math.abs(diffDays)} días`}</span>;
+    return <span className="text-[11px] font-bold px-2 py-1 rounded bg-blue-50 text-blue-600">📅 En {diffDays} días</span>;
+  };
+
+  return (
+    <>
+      <header className="flex justify-between items-center">
+        <button onClick={onBack} className="flex items-center gap-2 text-sm font-semibold text-[#65676b] hover:text-brand-text">
+          ← Volver a Leads
+        </button>
+        <a href={lead.url} target="_blank" rel="noreferrer"
+          className="flex items-center gap-2 px-4 py-2 bg-[#e7f3ef] text-brand-secondary rounded-full text-sm font-semibold hover:bg-green-100">
+          💬 Abrir WhatsApp
+        </a>
+      </header>
+
+      <div className="flex items-center gap-3 mb-2">
+        <h1 className="text-[28px] font-extrabold text-brand-text">{displayName}</h1>
+        <span className={`px-2 py-1 rounded text-[11px] font-bold uppercase ${
+          lead.estado === 'frio' ? 'bg-blue-100 text-blue-700' :
+          lead.estado === 'dm' ? 'bg-[#e7f3ef] text-brand-secondary' :
+          lead.estado === 'cliente' ? 'bg-green-100 text-green-800' :
+          'bg-gray-100 text-gray-500'
+        }`}>{lead.estado}</span>
+      </div>
+      <p className="text-sm text-[#65676b] mb-6 font-mono">{numero}</p>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="md:col-span-2 flex flex-col gap-4">
+
+          <div className="bg-white rounded-2xl border border-brand-gray-light shadow-brand-card p-5">
+            <div className="font-bold text-brand-text mb-4">Fase 3: Primer DM</div>
+            <label className="flex items-center gap-3 cursor-pointer mb-3">
+              <input type="checkbox" checked={!!lead.f3?.dm1_enviado} onChange={toggleF3Enviado}
+                className="w-5 h-5 accent-brand-primary" />
+              <span className="text-sm">Envié el primer DM</span>
+            </label>
+            {fechaDM1 && <div className="text-xs text-brand-secondary mb-3">✓ Enviado el {fechaDM1.toLocaleDateString('es-CL')}</div>}
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" checked={!!lead.f3?.dm1_respondio} onChange={toggleF3Respondio}
+                className="w-5 h-5 accent-brand-primary" />
+              <span className="text-sm">Me respondió el DM</span>
+            </label>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-brand-gray-light shadow-brand-card p-5">
+            <div className="font-bold text-brand-text mb-4">Fase 4: Seguimiento</div>
+            {[
+              'DM 2 — Día 3', 'DM 3 — Día 7', 'DM 4 — Día 12', 'DM 5 — Día 21'
+            ].map((title, i) => (
+              <div key={i} className={`border rounded-xl p-3 mb-3 ${lead.f4?.dms[i]?.e ? 'border-brand-gray-light' : !lead.f3?.dm1_enviado ? 'border-brand-gray-light' : getDMTag(i)?.props?.className?.includes('f57c00') ? 'border-[#f57c00] bg-[#fffbeb]' : 'border-brand-gray-light'}`}>
+                <div className="font-bold text-sm mb-2">{title}</div>
+                <div className="mb-2">{getDMTag(i)}</div>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input type="checkbox" checked={!!lead.f4?.dms[i]?.e} onChange={() => toggleF4(i)}
+                    className="w-5 h-5 accent-brand-primary" />
+                  <span className="text-sm">Enviado</span>
+                </label>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-white rounded-2xl border border-brand-gray-light shadow-brand-card p-5">
+            <div className="font-bold text-brand-text mb-4">Fase 5: Cierre</div>
+            <label className="flex items-center gap-3 cursor-pointer mb-3">
+              <input type="checkbox" checked={lead.estado === 'cliente'} onChange={toggleCliente}
+                className="w-5 h-5 accent-brand-primary" />
+              <span className="text-sm font-semibold text-brand-secondary">Abrió cuenta en Anita ✅</span>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" checked={lead.estado === 'descartado'} onChange={toggleDescartado}
+                className="w-5 h-5 accent-brand-primary" />
+              <span className="text-sm">Descartar prospecto</span>
+            </label>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <div className="bg-white rounded-2xl border border-brand-gray-light shadow-brand-card p-5">
+            <div className="font-bold text-brand-text mb-3">Notas</div>
+            <textarea
+              value={notas}
+              onChange={e => setNotas(e.target.value)}
+              onBlur={saveNotas}
+              rows={5}
+              placeholder="Observaciones..."
+              className="w-full border border-brand-gray-light rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:border-brand-primary"
+            />
+            <button onClick={saveNotas} disabled={saving}
+              className="mt-2 px-4 py-2 bg-brand-primary text-white text-xs font-bold rounded-lg hover:opacity-90 disabled:opacity-50">
+              {saving ? 'Guardando...' : 'Guardar notas'}
+            </button>
+          </div>
+          <div className="bg-white rounded-2xl border border-brand-gray-light shadow-brand-card p-5">
+            <div className="font-bold text-brand-text mb-3 text-sm">🛡 Objeciones</div>
+            <p className="text-xs text-[#65676b] mb-2"><strong>"Es muy caro":</strong> Anita se paga sola si recuperas 2 pedidos perdidos.</p>
+            <p className="text-xs text-[#65676b]"><strong>"No tengo tiempo":</strong> Si sabes hacer un live, ya sabes usar Anita.</p>
+          </div>
+          <div className="bg-white rounded-2xl border border-brand-gray-light shadow-brand-card p-5">
+            <div className="font-bold text-brand-text mb-3 text-sm">⚡ Script CLOSER</div>
+            <p className="text-xs text-[#65676b]">1. Clarifica | 2. Etiqueta | 3. Oferta | 4. Objeción | 5. Cierre</p>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
