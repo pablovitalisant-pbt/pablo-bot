@@ -1,52 +1,56 @@
 [
-  {
-    "id": 1,
-    "con_nombre": "Hola {nombre}, ¿cómo está? Soy Pablo, de la Zofri en Iquique. Le escribo súper breve — ¿usted o alguien de su equipo está vendiendo por lives en Facebook o Instagram actualmente?",
-    "generico": "Hola case, ¿cómo está? Soy Pablo, de la Zofri en Iquique. Le escribo súper breve — ¿usted o alguien de su equipo está vendiendo por lives en Facebook o Instagram actualmente?"
-  },
-  {
-    "id": 2,
-    "con_nombre": "Hola {nombre}, ¿todo bien? Pablo por acá, de la Zofri en Iquique. Oiga, consulta rápida: ¿han probado hacer lives de ventas en Facebook o Instagram?",
-    "generico": "Hola case, ¿todo bien? Pablo por acá, de la Zofri en Iquique. Oiga, consulta rápida: ¿han probado hacer lives de ventas en Facebook o Instagram?"
-  },
-  {
-    "id": 3,
-    "con_nombre": "Hola {nombre}, ¿cómo le va? Le habla Pablo desde la Zofri en Iquique. Le hago una corta — ¿usted o su equipo están usando lives para vender en redes?",
-    "generico": "Hola case, ¿cómo le va? Le habla Pablo desde la Zofri en Iquique. Le hago una corta — ¿usted o su equipo están usando lives para vender en redes?"
-  },
-  {
-    "id": 4,
-    "con_nombre": "Hola {nombre}, ¿qué tal? Pablo de la Zofri por aquí. Una pregunta al grano: ¿están vendiendo por lives en Facebook o Instagram?",
-    "generico": "Hola case, ¿qué tal? Pablo de la Zofri por aquí. Una pregunta al grano: ¿están vendiendo por lives en Facebook o Instagram?"
-  },
-  {
-    "id": 5,
-    "con_nombre": "Hola {nombre}, ¿cómo está? Soy Pablo, trabajo en la Zofri en Iquique. Oiga, rapidito — ¿usted o alguien de su equipo hace transmisiones en vivo para vender?",
-    "generico": "Hola case, ¿cómo está? Soy Pablo, trabajo en la Zofri en Iquique. Oiga, rapidito — ¿usted o alguien de su equipo hace transmisiones en vivo para vender?"
-  },
-  {
-    "id": 6,
-    "con_nombre": "Hola {nombre}, ¿todo bien por allá? Pablo de la Zofri en Iquique. Le consulto algo puntual — ¿ya están aprovechando los lives en redes para vender?",
-    "generico": "Hola case, ¿todo bien por allá? Pablo de la Zofri en Iquique. Le consulto algo puntual — ¿ya están aprovechando los lives en redes para vender?"
-  },
-  {
-    "id": 7,
-    "con_nombre": "Hola {nombre}, ¿cómo le va? Le escribe Pablo, de la Zofri en Iquique. Una duda breve: ¿usan Facebook o Instagram Live como canal de ventas?",
-    "generico": "Hola case, ¿cómo le va? Le escribe Pablo, de la Zofri en Iquique. Una duda breve: ¿usan Facebook o Instagram Live como canal de ventas?"
-  },
-  {
-    "id": 8,
-    "con_nombre": "Hola {nombre}, ¿qué tal? Pablo de la Zofri en Iquique por acá. Le hago una consulta rápida — ¿usted o su equipo venden a través de lives?",
-    "generico": "Hola case, ¿qué tal? Pablo de la Zofri en Iquique por acá. Le hago una consulta rápida — ¿usted o su equipo venden a través de lives?"
-  },
-  {
-    "id": 9,
-    "con_nombre": "Hola {nombre}, ¿cómo está? Soy Pablo desde la Zofri. Oiga, le pregunto algo corto — ¿han hecho lives de ventas o aún no lo están usando?",
-    "generico": "Hola case, ¿cómo está? Soy Pablo desde la Zofri. Oiga, le pregunto algo corto — ¿han hecho lives de ventas o aún no lo están usando?"
-  },
-  {
-    "id": 10,
-    "con_nombre": "Hola {nombre}, ¿todo bien? Pablo de la Zofri en Iquique. Le hago una pregunta directa — ¿están haciendo ventas por live en redes o todavía no?",
-    "generico": "Hola case, ¿todo bien? Pablo de la Zofri en Iquique. Le hago una pregunta directa — ¿están haciendo ventas por live en redes o todavía no?"
-  }
+  { "dm": 1, "id": 1, "con_nombre": "Hola {nombre}, ¿cómo está? Soy Pablo, de la Zofri en Iquique. Le escribo súper breve — ¿usted o alguien de su equipo está vendiendo por lives en Facebook o Instagram actualmente?", "generico": "Hola case, ¿cómo está? Soy Pablo, de la Zofri en Iquique. Le escribo súper breve — ¿usted o alguien de su equipo está vendiendo por lives en Facebook o Instagram actualmente?" },
+  { "dm": 1, "id": 2, "con_nombre": "Hola {nombre}, ¿todo bien? Pablo por acá, de la Zofri en Iquique. Oiga, consulta rápida: ¿han probado hacer lives de ventas en Facebook o Instagram?", "generico": "Hola case, ¿todo bien? Pablo por acá, de la Zofri en Iquique. Oiga, consulta rápida: ¿han probado hacer lives de ventas en Facebook o Instagram?" },
+  { "dm": 1, "id": 3, "con_nombre": "Hola {nombre}, ¿cómo le va? Le habla Pablo desde la Zofri en Iquique. Le hago una corta — ¿usted o su equipo están usando lives para vender en redes?", "generico": "Hola case, ¿cómo le va? Le habla Pablo desde la Zofri en Iquique. Le hago una corta — ¿usted o su equipo están usando lives para vender en redes?" },
+  { "dm": 1, "id": 4, "con_nombre": "Hola {nombre}, ¿qué tal? Pablo de la Zofri por aquí. Una pregunta al grano: ¿están vendiendo por lives en Facebook o Instagram?", "generico": "Hola case, ¿qué tal? Pablo de la Zofri por aquí. Una pregunta al grano: ¿están vendiendo por lives en Facebook o Instagram?" },
+  { "dm": 1, "id": 5, "con_nombre": "Hola {nombre}, ¿cómo está? Soy Pablo, trabajo en la Zofri en Iquique. Oiga, rapidito — ¿usted o alguien de su equipo hace transmisiones en vivo para vender?", "generico": "Hola case, ¿cómo está? Soy Pablo, trabajo en la Zofri en Iquique. Oiga, rapidito — ¿usted o alguien de su equipo hace transmisiones en vivo para vender?" },
+  { "dm": 1, "id": 6, "con_nombre": "Hola {nombre}, ¿todo bien por allá? Pablo de la Zofri en Iquique. Le consulto algo puntual — ¿ya están aprovechando los lives en redes para vender?", "generico": "Hola case, ¿todo bien por allá? Pablo de la Zofri en Iquique. Le consulto algo puntual — ¿ya están aprovechando los lives en redes para vender?" },
+  { "dm": 1, "id": 7, "con_nombre": "Hola {nombre}, ¿cómo le va? Le escribe Pablo, de la Zofri en Iquique. Una duda breve: ¿usan Facebook o Instagram Live como canal de ventas?", "generico": "Hola case, ¿cómo le va? Le escribe Pablo, de la Zofri en Iquique. Una duda breve: ¿usan Facebook o Instagram Live como canal de ventas?" },
+  { "dm": 1, "id": 8, "con_nombre": "Hola {nombre}, ¿qué tal? Pablo de la Zofri en Iquique por acá. Le hago una consulta rápida — ¿usted o su equipo venden a través de lives?", "generico": "Hola case, ¿qué tal? Pablo de la Zofri en Iquique por acá. Le hago una consulta rápida — ¿usted o su equipo venden a través de lives?" },
+  { "dm": 1, "id": 9, "con_nombre": "Hola {nombre}, ¿cómo está? Soy Pablo desde la Zofri. Oiga, le pregunto algo corto — ¿han hecho lives de ventas o aún no lo están usando?", "generico": "Hola case, ¿cómo está? Soy Pablo desde la Zofri. Oiga, le pregunto algo corto — ¿han hecho lives de ventas o aún no lo están usando?" },
+  { "dm": 1, "id": 10, "con_nombre": "Hola {nombre}, ¿todo bien? Pablo de la Zofri en Iquique. Le hago una pregunta directa — ¿están haciendo ventas por live en redes o todavía no?", "generico": "Hola case, ¿todo bien? Pablo de la Zofri en Iquique. Le hago una pregunta directa — ¿están haciendo ventas por live en redes o todavía no?" },
+
+  { "dm": 2, "id": 1, "con_nombre": "Hola {nombre}, ¿cómo está, case? Le escribo nuevamente solo por si no alcanzó a ver mi mensaje anterior. Quedé atento a lo que me pueda comentar cuando tenga un momento.", "generico": "Hola case, ¿cómo está? Le escribo nuevamente solo por si no alcanzó a ver mi mensaje anterior. Quedé atento a lo que me pueda comentar cuando tenga un momento." },
+  { "dm": 2, "id": 2, "con_nombre": "Hola {nombre}, ¿todo bien? Disculpe que le vuelva a escribir, case — solo quería saber si alcanzó a ver mi mensaje anterior. Cuando pueda, me comenta nomás.", "generico": "Hola case, ¿todo bien? Disculpe que le vuelva a escribir — solo quería saber si alcanzó a ver mi mensaje anterior. Cuando pueda, me comenta nomás." },
+  { "dm": 2, "id": 3, "con_nombre": "Hola {nombre}, ¿cómo le va, case? Paso por aquí de nuevo por si mi mensaje anterior se le pasó. No hay apuro, cuando tenga un ratito me cuenta.", "generico": "Hola case, ¿cómo le va? Paso por aquí de nuevo por si mi mensaje anterior se le pasó. No hay apuro, cuando tenga un ratito me cuenta." },
+  { "dm": 2, "id": 4, "con_nombre": "Hola {nombre}, ¿qué tal, case? Le escribo nuevamente solo para retomar lo que le consulté antes. Quedo atento cuando tenga tiempo.", "generico": "Hola case, ¿qué tal? Le escribo nuevamente solo para retomar lo que le consulté antes. Quedo atento cuando tenga tiempo." },
+  { "dm": 2, "id": 5, "con_nombre": "Hola {nombre}, ¿cómo está, case? Le dejo un mensajito por aquí por si no vio el anterior. Con gusto leo su respuesta cuando pueda.", "generico": "Hola case, ¿cómo está? Le dejo un mensajito por aquí por si no vio el anterior. Con gusto leo su respuesta cuando pueda." },
+  { "dm": 2, "id": 6, "con_nombre": "Hola {nombre}, ¿todo bien, case? Disculpe la insistencia, es solo para saber si pudo ver lo que le escribí antes.", "generico": "Hola case, ¿todo bien? Disculpe la insistencia, es solo para saber si pudo ver lo que le escribí antes." },
+  { "dm": 2, "id": 7, "con_nombre": "Hola {nombre}, ¿cómo le ha ido, case? Paso a saludar nuevamente y a dejarle el mensaje por aquí, por si no lo había visto.", "generico": "Hola case, ¿cómo le ha ido? Paso a saludar nuevamente y a dejarle el mensaje por aquí, por si no lo había visto." },
+  { "dm": 2, "id": 8, "con_nombre": "Hola {nombre}, ¿qué tal, case? Le escribo de nuevo con toda confianza, solo para saber si alcanzó a ver mi consulta anterior.", "generico": "Hola case, ¿qué tal? Le escribo de nuevo con toda confianza, solo para saber si alcanzó a ver mi consulta anterior." },
+  { "dm": 2, "id": 9, "con_nombre": "Hola {nombre}, ¿cómo está, case? Retomo el mensaje anterior por aquí, cuando tenga un momento me comenta.", "generico": "Hola case, ¿cómo está? Retomo el mensaje anterior por aquí, cuando tenga un momento me comenta." },
+  { "dm": 2, "id": 10, "con_nombre": "Hola {nombre}, ¿todo bien, case? Le escribo nuevamente solo como recordatorio suave del mensaje anterior.", "generico": "Hola case, ¿todo bien? Le escribo nuevamente solo como recordatorio suave del mensaje anterior." },
+
+  { "dm": 3, "id": 1, "con_nombre": "Hola {nombre}, ¿cómo está, case? Le comento con confianza — le preguntaba porque estamos mostrando una herramienta pensada justo para quienes venden por live. Si es su caso, con gusto se la muestro.", "generico": "Hola case, ¿cómo está? Le comento con confianza — le preguntaba porque estamos mostrando una herramienta pensada justo para quienes venden por live. Si es su caso, con gusto se la muestro." },
+  { "dm": 3, "id": 2, "con_nombre": "Hola {nombre}, ¿todo bien, case? Le cuento el motivo de mi mensaje — estamos trabajando con algo que ayuda bastante a quienes venden en vivo. Por eso le consultaba antes.", "generico": "Hola case, ¿todo bien? Le cuento el motivo de mi mensaje — estamos trabajando con algo que ayuda bastante a quienes venden en vivo. Por eso le consultaba antes." },
+  { "dm": 3, "id": 3, "con_nombre": "Hola {nombre}, ¿cómo le va, case? Le explico brevemente — estoy mostrando una solución para ventas por live, pero solo tiene sentido si usted trabaja así.", "generico": "Hola case, ¿cómo le va? Le explico brevemente — estoy mostrando una solución para ventas por live, pero solo tiene sentido si usted trabaja así." },
+  { "dm": 3, "id": 4, "con_nombre": "Hola {nombre}, ¿qué tal, case? Le escribía porque estamos ayudando a ordenar todo lo que pasa después de un live. Por eso quería saber si usted vende de esa forma.", "generico": "Hola case, ¿qué tal? Le escribía porque estamos ayudando a ordenar todo lo que pasa después de un live. Por eso quería saber si usted vende de esa forma." },
+  { "dm": 3, "id": 5, "con_nombre": "Hola {nombre}, ¿cómo está, case? Le cuento — estamos mostrando algo bien práctico para quienes hacen ventas en vivo. Si usted trabaja así, le puede servir bastante.", "generico": "Hola case, ¿cómo está? Le cuento — estamos mostrando algo bien práctico para quienes hacen ventas en vivo. Si usted trabaja así, le puede servir bastante." },
+  { "dm": 3, "id": 6, "con_nombre": "Hola {nombre}, ¿todo bien, case? El motivo de mi consulta anterior es que estamos mostrando una herramienta para ventas por live, pero solo aplica si usted ya está en eso.", "generico": "Hola case, ¿todo bien? El motivo de mi consulta anterior es que estamos mostrando una herramienta para ventas por live, pero solo aplica si usted ya está en eso." },
+  { "dm": 3, "id": 7, "con_nombre": "Hola {nombre}, ¿cómo le ha ido, case? Le explico el contexto — estamos trabajando con personas que venden por live y queríamos ver si es algo que usted también hace.", "generico": "Hola case, ¿cómo le ha ido? Le explico el contexto — estamos trabajando con personas que venden por live y queríamos ver si es algo que usted también hace." },
+  { "dm": 3, "id": 8, "con_nombre": "Hola {nombre}, ¿qué tal, case? Le cuento con total transparencia — estoy contactando a quienes venden por live porque tenemos algo que les puede simplificar bastante el trabajo.", "generico": "Hola case, ¿qué tal? Le cuento con total transparencia — estoy contactando a quienes venden por live porque tenemos algo que les puede simplificar bastante el trabajo." },
+  { "dm": 3, "id": 9, "con_nombre": "Hola {nombre}, ¿cómo está, case? Le comento brevemente — hay una herramienta pensada para ordenar los pedidos en los lives, por eso le hacía la consulta.", "generico": "Hola case, ¿cómo está? Le comento brevemente — hay una herramienta pensada para ordenar los pedidos en los lives, por eso le hacía la consulta." },
+  { "dm": 3, "id": 10, "con_nombre": "Hola {nombre}, ¿todo bien, case? Le explico — estoy viendo con algunas tiendas el tema de ventas por live porque tenemos una solución para eso.", "generico": "Hola case, ¿todo bien? Le explico — estoy viendo con algunas tiendas el tema de ventas por live porque tenemos una solución para eso." },
+
+  { "dm": 4, "id": 1, "con_nombre": "Hola {nombre}, ¿cómo está, case? Le explico en simple — es una herramienta que va anotando los pedidos automáticamente mientras usted vende en vivo, para que no tenga que revisar comentarios después.", "generico": "Hola case, ¿cómo está? Le explico en simple — es una herramienta que va anotando los pedidos automáticamente mientras usted vende en vivo, para que no tenga que revisar comentarios después." },
+  { "dm": 4, "id": 2, "con_nombre": "Hola {nombre}, ¿todo bien, case? Esto básicamente ordena todos los pedidos del live en automático, así evita confusiones después.", "generico": "Hola case, ¿todo bien? Esto básicamente ordena todos los pedidos del live en automático, así evita confusiones después." },
+  { "dm": 4, "id": 3, "con_nombre": "Hola {nombre}, ¿cómo le va, case? Lo que hace es bien directo: convierte los comentarios del live en pedidos ordenados.", "generico": "Hola case, ¿cómo le va? Lo que hace es bien directo: convierte los comentarios del live en pedidos ordenados." },
+  { "dm": 4, "id": 4, "con_nombre": "Hola {nombre}, ¿qué tal, case? Esto le puede servir porque evita perder pedidos cuando hay muchos comentarios en el live.", "generico": "Hola case, ¿qué tal? Esto le puede servir porque evita perder pedidos cuando hay muchos comentarios en el live." },
+  { "dm": 4, "id": 5, "con_nombre": "Hola {nombre}, ¿cómo está, case? Es una forma de tener todo el live ordenado sin tener que anotar manualmente.", "generico": "Hola case, ¿cómo está? Es una forma de tener todo el live ordenado sin tener que anotar manualmente." },
+  { "dm": 4, "id": 6, "con_nombre": "Hola {nombre}, ¿todo bien, case? Esto se conecta al live y va registrando quién pidió qué, automáticamente.", "generico": "Hola case, ¿todo bien? Esto se conecta al live y va registrando quién pidió qué, automáticamente." },
+  { "dm": 4, "id": 7, "con_nombre": "Hola {nombre}, ¿cómo le ha ido, case? La idea es simple: usted vende, y la herramienta se encarga de ordenar los pedidos.", "generico": "Hola case, ¿cómo le ha ido? La idea es simple: usted vende, y la herramienta se encarga de ordenar los pedidos." },
+  { "dm": 4, "id": 8, "con_nombre": "Hola {nombre}, ¿qué tal, case? Esto ayuda sobre todo cuando hay muchos comentarios y se vuelve difícil seguir todo.", "generico": "Hola case, ¿qué tal? Esto ayuda sobre todo cuando hay muchos comentarios y se vuelve difícil seguir todo." },
+  { "dm": 4, "id": 9, "con_nombre": "Hola {nombre}, ¿cómo está, case? Es una forma de evitar errores en pedidos después del live.", "generico": "Hola case, ¿cómo está? Es una forma de evitar errores en pedidos después del live." },
+  { "dm": 4, "id": 10, "con_nombre": "Hola {nombre}, ¿todo bien, case? Básicamente le ahorra el trabajo de revisar comentario por comentario después del live.", "generico": "Hola case, ¿todo bien? Básicamente le ahorra el trabajo de revisar comentario por comentario después del live." },
+
+  { "dm": 5, "id": 1, "con_nombre": "Hola {nombre}, ¿cómo está, case? Le dejo este último mensaje por acá — si en algún momento le interesa ordenar sus ventas por live, con gusto le muestro.", "generico": "Hola case, ¿cómo está? Le dejo este último mensaje por acá — si en algún momento le interesa ordenar sus ventas por live, con gusto le muestro." },
+  { "dm": 5, "id": 2, "con_nombre": "Hola {nombre}, ¿todo bien, case? No le molesto más después de este mensaje. Si más adelante le interesa el tema de ventas por live, quedo atento.", "generico": "Hola case, ¿todo bien? No le molesto más después de este mensaje. Si más adelante le interesa el tema de ventas por live, quedo atento." },
+  { "dm": 5, "id": 3, "con_nombre": "Hola {nombre}, ¿cómo le va, case? Cierro por aquí para no incomodar, pero con gusto le ayudo si en algún momento lo necesita.", "generico": "Hola case, ¿cómo le va? Cierro por aquí para no incomodar, pero con gusto le ayudo si en algún momento lo necesita." },
+  { "dm": 5, "id": 4, "con_nombre": "Hola {nombre}, ¿qué tal, case? Dejo esto por acá y no le escribo más — pero quedo atento si le interesa más adelante.", "generico": "Hola case, ¿qué tal? Dejo esto por acá y no le escribo más — pero quedo atento si le interesa más adelante." },
+  { "dm": 5, "id": 5, "con_nombre": "Hola {nombre}, ¿cómo está, case? Solo para cerrar por ahora — cualquier cosa, feliz de ayudarle cuando lo necesite.", "generico": "Hola case, ¿cómo está? Solo para cerrar por ahora — cualquier cosa, feliz de ayudarle cuando lo necesite." },
+  { "dm": 5, "id": 6, "con_nombre": "Hola {nombre}, ¿todo bien, case? Le agradezco el tiempo y quedo disponible si en algún momento quiere ver esto.", "generico": "Hola case, ¿todo bien? Le agradezco el tiempo y quedo disponible si en algún momento quiere ver esto." },
+  { "dm": 5, "id": 7, "con_nombre": "Hola {nombre}, ¿cómo le ha ido, case? Cierro conversación por ahora para no insistir, pero aquí quedo atento.", "generico": "Hola case, ¿cómo le ha ido? Cierro conversación por ahora para no insistir, pero aquí quedo atento." },
+  { "dm": 5, "id": 8, "con_nombre": "Hola {nombre}, ¿qué tal, case? No le escribo más después de este, pero si le interesa más adelante, me avisa con confianza.", "generico": "Hola case, ¿qué tal? No le escribo más después de este, pero si le interesa más adelante, me avisa con confianza." },
+  { "dm": 5, "id": 9, "con_nombre": "Hola {nombre}, ¿cómo está, case? Gracias por su tiempo — quedo disponible si más adelante quiere revisar esto.", "generico": "Hola case, ¿cómo está? Gracias por su tiempo — quedo disponible si más adelante quiere revisar esto." },
+  { "dm": 5, "id": 10, "con_nombre": "Hola {nombre}, ¿todo bien, case? Cierro por aquí para no incomodar, pero con gusto le explico cuando quiera.", "generico": "Hola case, ¿todo bien? Cierro por aquí para no incomodar, pero con gusto le explico cuando quiera." }
 ]
